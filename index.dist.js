@@ -6,7 +6,6 @@ var EL = {
     cursor            : null,
     gazeCursor        : null,
     floor             : null,
-    angularSum        : null,
     floorCursorSphere : null
 };
 
@@ -38,14 +37,22 @@ function getFPLineHTML(from, to) {
 function addFPVertex() {
     var point = AFRAME.utils.extend({}, STATE.floorCursorPoint);
 
-    var lastPoint = STATE.fpVertices[0];
+    /*
+     var lastPoint = STATE.fpVertices[0];
 
-    if (lastPoint) {
-        EL.scene.insertAdjacentHTML('beforeend', getFPLineHTML(lastPoint, point));
-    }
+     if (lastPoint) {
+     EL.scene.insertAdjacentHTML('beforeend', getFPLineHTML(lastPoint, point));
+     }
+     */
 
     STATE.fpVertices.unshift(point);
     EL.scene.insertAdjacentHTML('beforeend', getFPVertexHTML(point));
+}
+
+function removeLastFPVertex() {
+    STATE.fpVertices.shift();
+    var lastFPVertex = document.querySelector('[mixin="fpVertex"]:last');
+    if (lastFPVertex) lastFPVertex.remove();
 }
 
 function addFPPolygon() {
@@ -72,13 +79,22 @@ function onKeyPress(e) {
 //////////////////////////////////////////////////////////////////////////////////////////
 
 var angularSum = 0;
+var PIPI       = Math.PI * 2;
 
 function onAngular(angularResponse) {
     if (angularResponse.isEnd) {
         angularSum = 0;
     } else {
         angularSum += angularResponse.dRadian;
-        EL.angularSum.innerHTML = Math.round(angularSum / Math.PI * 180) + ' deg';
+
+        // Full rotation clockwise adds a vertex
+        if (angularSum >= PIPI) {
+            addFPVertex();
+            angularSum = 0;
+        } else if (angularSum <= -PIPI) {
+            removeLastFPVertex();
+            angularSum = 0;
+        }
     }
 }
 

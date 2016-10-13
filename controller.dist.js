@@ -75,10 +75,12 @@ function getNetworkStatus() {
 }
 
 function updateTable() {
-    EL.deviceId.value      = getDeviceId();
-    EL.deviceMode.value    = getDeviceMode();
-    EL.networkMode.value   = getNetworkMode();
-    EL.networkStatus.value = getNetworkStatus();
+    EL.deviceId.value    = getDeviceId();
+    EL.deviceMode.value  = getDeviceMode();
+    EL.networkMode.value = getNetworkMode();
+
+    EL.networkStatus.value     = getNetworkStatus();
+    EL.networkStatus.className = isConnected ? 'green' : 'red';
 }
 
 function onConnect() {
@@ -86,22 +88,41 @@ function onConnect() {
     updateTable();
 }
 
-function onDOMContentLoaded() {
-    // Run all values as selectors and save in place
-    Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
+function onReconnectFailed(){
+    isConnected = false;
+    updateTable();
+}
 
+function onConnectError(){
+    isConnected = false;
+    EL.networkStatus.className = 'yellow';
+}
+
+function initNetwork() {
     network
         .init({
             useSocketIO : true,
             url         : "http://localhost:3001"
         })
-        .on('connect', onConnect);
+        .on('connect', onConnect)
+        .on('connect_error', onConnectError)
+        .on('reconnect_failed', onReconnectFailed);
+}
 
+function initInput() {
     ({
         xy       : inputXY,
         gyronorm : inputGyronorm
     })[getDeviceMode()]
         .init(network);
+}
+
+function onDOMContentLoaded() {
+    // Run all values as selectors and save in place
+    Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
+
+    initNetwork();
+    initInput();
 }
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);

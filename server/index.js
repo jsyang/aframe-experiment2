@@ -1,18 +1,18 @@
 var io = require('socket.io')(3001);
 
+function onXY(a) {
+    console.log(a);
+}
 
-function onXY(a,b,c){
-    console.log(a,b,c);
+function onAngular(s, a) {
+    console.log(a);
+    s.broadcast.emit('angular', a);
 }
 
 function onConnection(socket) {
-    io.emit('this', { will: 'be received by everyone'});
-
-    socket.on('xy', onXY);
-
-    socket.on('disconnect', function () {
-        io.emit('user disconnected');
-    });
+    socket
+        .on('xy', onXY)
+        .on('angular', onAngular.bind(null, socket))
 }
 
 io.on('connection', onConnection);

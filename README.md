@@ -50,6 +50,9 @@ copy the resultant HTML
 Real-time sync'd graph DB that's available locally.
 
 - FeathersJS another alt to Firebase: https://docs.feathersjs.com/getting-started/quick-start.html
+- [ProxyControls](https://proxy-controls.donmccurdy.com/#/connect)
+Polished version of devices connecting to others via WebRTC + WebSockets. Differences:
+    - paradigm limits it strictly to 1 type (client/host) per device (pc/mobile)
 
 ## Existing VR Guidelines
 

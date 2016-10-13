@@ -3,26 +3,12 @@ var network = require('./network');
 
 var inputXY       = require('./inputXY');
 var inputGyronorm = require('./inputGyronorm');
+var inputAngular  = require('./inputAngular');
 var getHashId     = require('./getHashId');
 
 var isConnected = false;
 
-function connect() {
-    network
-        .init({
-            useSocketIO : true,
-            url         : "http://localhost:3001"
-        })
-        .on('connect', setConnectedStatus);
-
-    $('#deviceMode').innerHTML = DEVICE_MODE;
-
-    if (DEVICE_MODE === 'gyronorm') {
-        inputGyronorm.init(network);
-    } else if (DEVICE_MODE === 'xy') {
-        inputXY.init(network);
-    }
-}
+// DOM Element cache
 
 var EL = {
     deviceId        : null,
@@ -50,8 +36,11 @@ function getDeviceId() {
 
 // Device mode
 
+var DEVICE_MODE        = 'xy|gyronorm|angular';
+var REGEXP_DEVICE_MODE = new RegExp(DEVICE_MODE);
+
 function updateDeviceMode(mode) {
-    if (/xy|gyronorm/.test(mode)) {
+    if (REGEXP_DEVICE_MODE.test(mode)) {
         localStorage.setItem('deviceMode', mode);
     } else {
         localStorage.setItem('deviceMode', 'xy');
@@ -66,9 +55,13 @@ function getDeviceMode() {
     return mode;
 }
 
+// Network mode
+
 function getNetworkMode() {
     return 'socketio';
 }
+
+// Network status
 
 function getNetworkStatus() {
     return isConnected ? 'connected' : 'not connected';
@@ -88,13 +81,13 @@ function onConnect() {
     updateTable();
 }
 
-function onReconnectFailed(){
+function onReconnectFailed() {
     isConnected = false;
     updateTable();
 }
 
-function onConnectError(){
-    isConnected = false;
+function onConnectError() {
+    isConnected                = false;
     EL.networkStatus.className = 'yellow';
 }
 
@@ -109,17 +102,34 @@ function initNetwork() {
         .on('reconnect_failed', onReconnectFailed);
 }
 
+var mapDeviceModeToInputObject = {
+    xy       : inputXY,
+    gyronorm : inputGyronorm,
+    angular  : inputAngular
+};
+
 function initInput() {
-    ({
-        xy       : inputXY,
-        gyronorm : inputGyronorm
-    })[getDeviceMode()]
+    mapDeviceModeToInputObject[getDeviceMode()]
         .init(network);
+}
+
+function removeInput() {
+    mapDeviceModeToInputObject[getDeviceMode()]
+        .remove();
+}
+
+function onDeviceModeClick() {
+    removeInput();
+    updateDeviceMode(prompt('valid modes are: ' + DEVICE_MODE.replace(/\|/g, ', '), getDeviceMode()));
+    initInput();
+    updateTable();
 }
 
 function onDOMContentLoaded() {
     // Run all values as selectors and save in place
     Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
+
+    EL.deviceMode.onclick = onDeviceModeClick;
 
     initNetwork();
     initInput();
@@ -127,7 +137,7 @@ function onDOMContentLoaded() {
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
 window.ontouchmove = function (e) { e.preventDefault(); };
-},{"./getHashId":2,"./inputGyronorm":3,"./inputXY":4,"./network":5}],2:[function(require,module,exports){
+},{"./getHashId":2,"./inputAngular":3,"./inputGyronorm":4,"./inputXY":5,"./network":6}],2:[function(require,module,exports){
 var ID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 
 /**
@@ -146,6 +156,162 @@ function getHashId(length) {
 
 module.exports = getHashId;
 },{}],3:[function(require,module,exports){
+/**
+ * Handle angular input (arc drawing with touch events)
+ */
+
+var throttle = require('./throttle');
+
+var network;
+
+var originX = 0;
+var originY = 0;
+var dX      = 0;
+var dY      = 0;
+var prevRadian;
+var radian  = 0;
+
+function onTouchStart(e) {
+    var t = e.changedTouches;
+
+    // Support single touch point
+    if (t.length === 1) {
+        originX    = t[0].pageX;
+        originY    = t[0].pageY;
+        prevRadian = 0;
+    }
+
+    updateTouchCircle(originX, originY);
+}
+
+var PIPI = Math.PI * 2;
+
+function _onTouchMove(e) {
+    var t = e.changedTouches;
+
+    // Support single touch point
+    if (t.length === 1) {
+        dX = t[0].pageX - originX;
+        dY = t[0].pageY - originY;
+
+        radian = -Math.atan2(-dY, dX);
+
+        if (!isNaN(prevRadian)) {
+            // Stop radians from jumping when they hit PIPI
+            prevRadian = prevRadian % PIPI;
+            radian     = radian % PIPI;
+
+            // Make sure it can't jump from 180 to -180
+            if (Math.abs(radian - prevRadian) > Math.PI) {
+                if (radian < prevRadian) {
+                    radian += PIPI;
+                } else {
+                    radian -= PIPI;
+                }
+            }
+
+            // Send update
+            network.emit('angular', { dRadian : radian - prevRadian });
+
+        }
+
+        prevRadian = radian;
+        updateTouchCircleSmall(t[0].pageX, t[0].pageY);
+    }
+}
+
+function onTouchEnd(e) {
+    var t = e.changedTouches;
+
+    // Support single touch point
+    if (t.length === 1) {
+        dX = t[0].pageX - originX;
+        dY = t[0].pageY - originY;
+
+        radian = -Math.atan2(-dY, dX);
+
+        if (!isNaN(prevRadian)) {
+            // Stop radians from jumping when they hit PIPI
+            prevRadian = prevRadian % PIPI;
+            radian     = radian % PIPI;
+
+            // Make sure it can't jump from 180 to -180
+            if (Math.abs(radian - prevRadian) > Math.PI) {
+                if (radian < prevRadian) {
+                    radian += PIPI;
+                } else {
+                    radian -= PIPI;
+                }
+            }
+
+            // Send update
+            network.emit('angular', { dRadian : radian - prevRadian, isEnd : true });
+
+        }
+
+        prevRadian = undefined;
+        dX         = 0;
+        dY         = 0;
+        originY    = 0;
+        originX    = 0;
+        updateTouchCircle(-100, -100);
+        updateTouchCircleSmall(-100, -100);
+    }
+}
+
+var onTouchMove = throttle(_onTouchMove, 10);
+
+var circleEl;
+var circleSmallEl;
+
+function createTouchCircle() {
+    circleEl           = document.createElement('div');
+    circleEl.className = 'positionAbsolute circle';
+    document.body.appendChild(circleEl);
+    circleSmallEl           = document.createElement('div');
+    circleSmallEl.className = 'positionAbsolute circleSmall';
+    document.body.appendChild(circleSmallEl);
+}
+
+function updateTouchCircle(x, y) {
+    circleEl.style.transform = 'translate(' + Math.round(x) + 'px ,' + Math.round(y) + 'px)';
+}
+
+function updateTouchCircleSmall(x, y) {
+    circleSmallEl.style.transform = 'translate(' + Math.round(x) + 'px ,' + Math.round(y) + 'px)';
+}
+
+function removeTouchCircles() {
+    if (circleEl) circleEl.remove();
+    if (circleSmallEl) circleSmallEl.remove();
+    circleEl      = undefined;
+    circleSmallEl = undefined;
+}
+
+function init(networkInstance) {
+    createTouchCircle();
+    updateTouchCircle(-100, -100);
+    updateTouchCircleSmall(-100, -100);
+
+    network = networkInstance;
+    window.addEventListener('touchstart', onTouchStart);
+    window.addEventListener('touchmove', onTouchMove);
+    window.addEventListener('touchend', onTouchEnd);
+}
+
+function remove() {
+    removeTouchCircles();
+    network = null;
+    window.removeEventListener('touchstart', onTouchStart);
+    window.removeEventListener('touchmove', onTouchMove);
+    window.removeEventListener('touchend', onTouchEnd);
+}
+
+module.exports = {
+    init   : init,
+    remove : remove
+};
+},{"./throttle":7}],4:[function(require,module,exports){
 var network;
 
 var GYRONORM_CONFIG = { frequency : 25, decimalCount : 0 };
@@ -186,7 +352,7 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var throttle = require('./throttle');
 
 var network;
@@ -270,7 +436,7 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{"./throttle":6}],5:[function(require,module,exports){
+},{"./throttle":7}],6:[function(require,module,exports){
 var useSocketIO = false;
 var useFirebase = false;
 
@@ -347,7 +513,7 @@ module.exports = {
     emit : emit,
     on   : on
 };
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = function throttle(fn, threshhold, scope) {
     threshhold || (threshhold = 250);
     var last, deferTimer;

@@ -1,9 +1,12 @@
+var network = require('./network');
+
 var EL = {
-    'scene'             : null,
-    'cursor'            : null,
-    'gazeCursor'        : null,
-    'floor'             : null,
-    'floorCursorSphere' : null
+    scene             : null,
+    cursor            : null,
+    gazeCursor        : null,
+    floor             : null,
+    angularSum        : null,
+    floorCursorSphere : null
 };
 
 var STATE = {
@@ -65,6 +68,28 @@ function onKeyPress(e) {
     }
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////
+
+var angularSum = 0;
+
+function onAngular(angularResponse) {
+    if (angularResponse.isEnd) {
+        angularSum = 0;
+    } else {
+        angularSum += angularResponse.dRadian;
+        EL.angularSum.innerHTML = Math.round(angularSum / Math.PI * 180) + ' deg';
+    }
+}
+
+function initNetwork() {
+    network
+        .init({
+            useSocketIO : true,
+            url         : "http://localhost:3001"
+        })
+        .on('angular', onAngular);
+}
+
 function onDOMContentLoaded() {
     // Run all values as selectors and save in place
     Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
@@ -74,6 +99,8 @@ function onDOMContentLoaded() {
 
     window.addEventListener('keypress', onKeyPress);
     //EL.gazeCursor.addEventListener('click', onClick);
+
+    initNetwork();
 }
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);

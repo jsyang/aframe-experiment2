@@ -2,26 +2,12 @@ var network = require('./network');
 
 var inputXY       = require('./inputXY');
 var inputGyronorm = require('./inputGyronorm');
+var inputAngular  = require('./inputAngular');
 var getHashId     = require('./getHashId');
 
 var isConnected = false;
 
-function connect() {
-    network
-        .init({
-            useSocketIO : true,
-            url         : "http://localhost:3001"
-        })
-        .on('connect', setConnectedStatus);
-
-    $('#deviceMode').innerHTML = DEVICE_MODE;
-
-    if (DEVICE_MODE === 'gyronorm') {
-        inputGyronorm.init(network);
-    } else if (DEVICE_MODE === 'xy') {
-        inputXY.init(network);
-    }
-}
+// DOM Element cache
 
 var EL = {
     deviceId        : null,
@@ -49,8 +35,11 @@ function getDeviceId() {
 
 // Device mode
 
+var DEVICE_MODE        = 'xy|gyronorm|angular';
+var REGEXP_DEVICE_MODE = new RegExp(DEVICE_MODE);
+
 function updateDeviceMode(mode) {
-    if (/xy|gyronorm/.test(mode)) {
+    if (REGEXP_DEVICE_MODE.test(mode)) {
         localStorage.setItem('deviceMode', mode);
     } else {
         localStorage.setItem('deviceMode', 'xy');
@@ -65,9 +54,13 @@ function getDeviceMode() {
     return mode;
 }
 
+// Network mode
+
 function getNetworkMode() {
     return 'socketio';
 }
+
+// Network status
 
 function getNetworkStatus() {
     return isConnected ? 'connected' : 'not connected';
@@ -87,13 +80,13 @@ function onConnect() {
     updateTable();
 }
 
-function onReconnectFailed(){
+function onReconnectFailed() {
     isConnected = false;
     updateTable();
 }
 
-function onConnectError(){
-    isConnected = false;
+function onConnectError() {
+    isConnected                = false;
     EL.networkStatus.className = 'yellow';
 }
 
@@ -108,17 +101,34 @@ function initNetwork() {
         .on('reconnect_failed', onReconnectFailed);
 }
 
+var mapDeviceModeToInputObject = {
+    xy       : inputXY,
+    gyronorm : inputGyronorm,
+    angular  : inputAngular
+};
+
 function initInput() {
-    ({
-        xy       : inputXY,
-        gyronorm : inputGyronorm
-    })[getDeviceMode()]
+    mapDeviceModeToInputObject[getDeviceMode()]
         .init(network);
+}
+
+function removeInput() {
+    mapDeviceModeToInputObject[getDeviceMode()]
+        .remove();
+}
+
+function onDeviceModeClick() {
+    removeInput();
+    updateDeviceMode(prompt('valid modes are: ' + DEVICE_MODE.replace(/\|/g, ', '), getDeviceMode()));
+    initInput();
+    updateTable();
 }
 
 function onDOMContentLoaded() {
     // Run all values as selectors and save in place
     Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
+
+    EL.deviceMode.onclick = onDeviceModeClick;
 
     initNetwork();
     initInput();

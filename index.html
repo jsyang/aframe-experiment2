@@ -5,13 +5,23 @@
     <script src="lib/aframe-line-component.js"></script>
     <script src="lib/aframe-polygon-component.js"></script>
 
-    <!--<script src="lib/firebase.3.4.1.js"></script>-->
-    <!--<script src="firebase-config.js"></script>-->
     <script src="lib/socket.io.1.2.0.js"></script>
 
     <script src="index.dist.js"></script>
+
+    <style>
+        #angularSum {
+            position : absolute;
+            z-index  : 1000;
+            top      : 0;
+            left     : 0;
+            color    : red;
+        }
+    </style>
 </head>
 <body>
+
+<div id="angularSum">Angular sum here</div>
 
 <a-scene id="scene">
     <a-assets>

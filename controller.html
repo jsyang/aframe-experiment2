@@ -1,0 +1,48 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <script src="lib/gyronorm.min.js"></script>
+    <script src="lib/socket.io.1.2.0.js"></script>
+
+    <script src="controller.dist.js"></script>
+
+    <style>
+        .heading {
+            font-weight : bold;
+        }
+
+        input {
+            appearance : button;
+        }
+    </style>
+</head>
+<body>
+
+<table>
+    <tr>
+        <td class="heading">Controller ID</td>
+        <td><input type="button" id="deviceId"></td>
+    </tr>
+    <tr>
+        <td class="heading">Controller Mode</td>
+        <td><input type="button" id="deviceMode"></td>
+    </tr>
+    <tr>
+        <td class="heading">Network Mode</td>
+        <td><input type="button" id="networkMode"></td>
+    </tr>
+    <tr>
+        <td class="heading">Network Status</td>
+        <td><input type="button" id="networkStatus"></td>
+    </tr>
+    <tr>
+        <td colspan="2"><input type="button" id="openControlArea" value="Open control area"></td>
+    </tr>
+</table>
+
+<div id="controlArea">
+
+</div>
+
+</body>
+</html>

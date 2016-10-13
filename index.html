@@ -1,0 +1,47 @@
+<html>
+<head>
+    <script src="lib/aframe.0.3.0.min.js"></script>
+    <script src="lib/aframe-cubemap-component.js"></script>
+    <script src="lib/aframe-line-component.js"></script>
+    <script src="lib/aframe-polygon-component.js"></script>
+
+    <!--<script src="lib/firebase.3.4.1.js"></script>-->
+    <!--<script src="firebase-config.js"></script>-->
+    <script src="lib/socket.io.1.2.0.js"></script>
+
+    <script src="index.dist.js"></script>
+</head>
+<body>
+
+<a-scene id="scene">
+    <a-assets>
+        <a-mixin id="fpVertex" geometry="radius: 0.1" material="color: #dddd22"></a-mixin>
+        <a-mixin id="fpLine" material="color: #dddd22"></a-mixin>
+    </a-assets>
+
+
+    <!-- CAMERA -->
+    <a-camera>
+        <a-cursor id="gazeCursor"
+                  cursor raycaster="interval:100; objects: .interactive"
+                  position="0 0 -1"
+                  geometry="primitive: ring"
+                  material="color: black; shader: flat"></a-cursor>
+    </a-camera>
+
+    <!-- SCENE -->
+    <a-sphere id="floorCursorSphere" color="#dd2222" radius="0.2" id="cursor" material="opacity:0.6"></a-sphere>
+
+
+    <a-plane class="interactive" id="floor" width="256" height="256" rotation="-90 0 0" position="0 -1 0"
+             material="color: #222222; opacity: 0.2"></a-plane>
+
+
+    <a-entity id="skybox" cubemap="folder:assets/room/"></a-entity>
+
+</a-scene>
+
+
+</body>
+
+</html>

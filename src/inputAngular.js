@@ -1,3 +1,5 @@
+var controllerAudioFeedback = require('./controllerAudioFeedback');
+
 /**
  * Handle angular input (arc drawing with touch events)
  */
@@ -13,6 +15,37 @@ var dY      = 0;
 var prevRadian;
 var radian  = 0;
 
+/** @constant */
+var PIPI = Math.PI * 2;
+
+var angularSum           = 0;
+var audioFeedbackdFreq   = 0;
+var AUDIO_FEEDBACK_RANGE = {
+    FROM : 200,
+    TO   : 2000
+};
+
+function resetAudioFeedbackFreq() {
+    angularSum         = 0;
+    audioFeedbackdFreq = (AUDIO_FEEDBACK_RANGE.TO - AUDIO_FEEDBACK_RANGE.FROM) / PIPI;
+    controllerAudioFeedback.setFreq(audioFeedbackdFreq + AUDIO_FEEDBACK_RANGE.FROM);
+    controllerAudioFeedback.start();
+}
+
+function addAudioFeedbackFreq(dFreq) {
+    angularSum += dFreq;
+
+    if(Math.abs(angularSum) > PIPI){
+        controllerAudioFeedback.stop();
+        controllerAudioFeedback.playSoundFile('pop');
+        angularSum = 0;
+    } else {
+        controllerAudioFeedback.setFreq(angularSum * audioFeedbackdFreq + AUDIO_FEEDBACK_RANGE.FROM);
+    }
+}
+
+// // // // // // // // // // // // // // // //
+
 function onTouchStart(e) {
     var t = e.changedTouches;
 
@@ -24,9 +57,8 @@ function onTouchStart(e) {
     }
 
     updateTouchCircle(originX, originY);
+    resetAudioFeedbackFreq();
 }
-
-var PIPI = Math.PI * 2;
 
 function _onTouchMove(e) {
     var t = e.changedTouches;
@@ -54,7 +86,7 @@ function _onTouchMove(e) {
 
             // Send update
             network.emit('angular', { dRadian : radian - prevRadian });
-
+            addAudioFeedbackFreq(radian - prevRadian);
         }
 
         prevRadian = radian;
@@ -88,6 +120,7 @@ function onTouchEnd(e) {
 
             // Send update
             network.emit('angular', { dRadian : radian - prevRadian, isEnd : true });
+            controllerAudioFeedback.stop();
 
         }
 
@@ -139,6 +172,8 @@ function init(networkInstance) {
     window.addEventListener('touchstart', onTouchStart);
     window.addEventListener('touchmove', onTouchMove);
     window.addEventListener('touchend', onTouchEnd);
+
+    controllerAudioFeedback.init();
 }
 
 function remove() {
@@ -147,6 +182,8 @@ function remove() {
     window.removeEventListener('touchstart', onTouchStart);
     window.removeEventListener('touchmove', onTouchMove);
     window.removeEventListener('touchend', onTouchEnd);
+
+    controllerAudioFeedback.remove();
 }
 
 module.exports = {

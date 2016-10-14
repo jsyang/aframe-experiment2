@@ -94,7 +94,7 @@ function initNetwork() {
     network
         .init({
             useSocketIO : true,
-            url         : "http://localhost:3001"
+            url         : location.protocol + '//' + location.hostname + ':3001'
         })
         .on('connect', onConnect)
         .on('connect_error', onConnectError)

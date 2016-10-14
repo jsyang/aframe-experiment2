@@ -54,6 +54,8 @@ Real-time sync'd graph DB that's available locally.
 Polished version of devices connecting to others via WebRTC + WebSockets. Differences:
     - paradigm limits it strictly to 1 type (client/host) per device (pc/mobile)
 
+- `HTMLElement.remove()` does not work for removing entities through the DOM. Instead use `HTMLElement.parentNode.removeChild(HTMLElement)`
+
 ## Existing VR Guidelines
 
 - [Unreal Engine VR Guidelines Doc](https://docs.unrealengine.com/latest/INT/Platforms/VR/ContentSetup/)

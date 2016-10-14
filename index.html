@@ -8,16 +8,6 @@
     <script src="lib/socket.io.1.2.0.js"></script>
 
     <script src="index.dist.js"></script>
-
-    <style>
-        #angularSum {
-            position : absolute;
-            z-index  : 1000;
-            top      : 0;
-            left     : 0;
-            color    : red;
-        }
-    </style>
 </head>
 <body>
 
@@ -32,11 +22,7 @@
 
     <!-- CAMERA -->
     <a-camera>
-        <a-cursor id="gazeCursor"
-                  cursor raycaster="interval:100; objects: .interactive"
-                  position="0 0 -1"
-                  geometry="primitive: ring"
-                  material="color: black; shader: flat"></a-cursor>
+        <a-entity raycaster="interval: 50; objects: .interactive" position="0 0 -1"></a-entity>
     </a-camera>
 
     <!-- SCENE -->

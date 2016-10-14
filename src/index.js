@@ -3,7 +3,6 @@ var network = require('./network');
 var EL = {
     scene             : null,
     cursor            : null,
-    gazeCursor        : null,
     floor             : null,
     floorCursorSphere : null
 };
@@ -54,6 +53,12 @@ function removeLastFPVertex() {
     if (lastFPVertex) lastFPVertex.remove();
 }
 
+function removeFPVertices(){
+    STATE.fpVertices = [];
+    [].slice.call(document.querySelectorAll('[mixin="fpVertex"]'))
+        .forEach(scene.removeChild.bind(scene));
+}
+
 function addFPPolygon() {
     var polygonEntity = '<a-entity mixin="fpPlane" polygon="path:' +
         STATE.fpVertices
@@ -88,7 +93,13 @@ function onAngular(angularResponse) {
 
         // Full rotation clockwise adds a vertex
         if (angularSum >= PIPI) {
-            addFPVertex();
+            if(STATE.fpVertices.length === 4) {
+                addFPPolygon();
+                removeFPVertices();
+            } else {
+                addFPVertex();
+            }
+
             angularSum = 0;
         } else if (angularSum <= -PIPI) {
             removeLastFPVertex();
@@ -101,7 +112,7 @@ function initNetwork() {
     network
         .init({
             useSocketIO : true,
-            url         : "http://localhost:3001"
+            url         : location.protocol + '//' + location.hostname + ':3001'
         })
         .on('angular', onAngular);
 }
@@ -114,7 +125,6 @@ function onDOMContentLoaded() {
         .addEventListener('raycaster-intersected', onFloorRaycasterIntersected);
 
     window.addEventListener('keypress', onKeyPress);
-    //EL.gazeCursor.addEventListener('click', onClick);
 
     initNetwork();
 }

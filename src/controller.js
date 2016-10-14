@@ -19,8 +19,8 @@ var EL = {
 
 // Device id
 
-function updateDeviceId() {
-    var id = getHashId();
+function updateDeviceId(id) {
+    id = id || getHashId();
     localStorage.setItem('deviceId', id);
     return id;
 }
@@ -119,8 +119,21 @@ function removeInput() {
 
 function onDeviceModeClick() {
     removeInput();
-    updateDeviceMode(prompt('valid modes are: ' + DEVICE_MODE.replace(/\|/g, ', '), getDeviceMode()));
+    updateDeviceMode(
+        prompt(
+            'valid modes are: ' + DEVICE_MODE.replace(/\|/g, ', '),
+            getDeviceMode()
+        )
+    );
     initInput();
+    updateTable();
+}
+
+function onDeviceIdClick() {
+    updateDeviceId(prompt(
+        'Enter a new id for this device',
+        getDeviceId()
+    ));
     updateTable();
 }
 
@@ -128,6 +141,7 @@ function onDOMContentLoaded() {
     // Run all values as selectors and save in place
     Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
 
+    EL.deviceId.onclick   = onDeviceIdClick;
     EL.deviceMode.onclick = onDeviceModeClick;
 
     initNetwork();

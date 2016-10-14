@@ -50,7 +50,7 @@ function addFPVertex() {
 
 function removeLastFPVertex() {
     STATE.fpVertices.shift();
-    var lastFPVertex = document.querySelector('[mixin="fpVertex"]:last');
+    var lastFPVertex = document.querySelector('[mixin="fpVertex"]:last-child');
     if (lastFPVertex) lastFPVertex.remove();
 }
 

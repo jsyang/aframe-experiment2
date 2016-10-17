@@ -56,6 +56,11 @@ Polished version of devices connecting to others via WebRTC + WebSockets. Differ
 
 - `HTMLElement.remove()` does not work for removing entities through the DOM. Instead use `HTMLElement.parentNode.removeChild(HTMLElement)`
 
+- [Early handwriting recognition](http://jackschaedler.github.io/handwriting-recognition)
+    [DIY version](http://hackaday.com/2016/10/12/ask-hackaday-diy-handwriting-recognition)
+    [$1 unistroke recognizer](http://depts.washington.edu/aimgroup/proj/dollar)
+
+- [Frustuhttps://jesstelford.github.io/aframe-frustum-lock-component/
 ## Existing VR Guidelines
 
 - [Unreal Engine VR Guidelines Doc](https://docs.unrealengine.com/latest/INT/Platforms/VR/ContentSetup/)

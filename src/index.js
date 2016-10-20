@@ -3,6 +3,7 @@ var network = require('./network');
 var EL = {
     scene             : null,
     cursor            : null,
+    inputCanvas       : null,
     floor             : null,
     floorCursorSphere : null
 };
@@ -53,7 +54,7 @@ function removeLastFPVertex() {
     if (lastFPVertex) lastFPVertex.remove();
 }
 
-function removeFPVertices(){
+function removeFPVertices() {
     STATE.fpVertices = [];
     [].slice.call(document.querySelectorAll('[mixin="fpVertex"]'))
         .forEach(scene.removeChild.bind(scene));
@@ -85,15 +86,15 @@ function onKeyPress(e) {
 var angularSum = 0;
 var PIPI       = Math.PI * 2;
 
-function onAngular(angularResponse) {
-    if (angularResponse.isEnd) {
+function onAngular(res) {
+    if (res.isEnd) {
         angularSum = 0;
     } else {
-        angularSum += angularResponse.dRadian;
+        angularSum += res.dRadian;
 
         // Full rotation clockwise adds a vertex
         if (angularSum >= PIPI) {
-            if(STATE.fpVertices.length === 4) {
+            if (STATE.fpVertices.length === 4) {
                 addFPPolygon();
                 removeFPVertices();
             } else {
@@ -108,12 +109,55 @@ function onAngular(angularResponse) {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+var ctx2d;
+var inputCanvasComponent;
+var CENTERX = 256;
+var CENTERY = 256;
+
+var xPoints = [];
+var yPoints = [];
+
+function onXY(res) {
+    if (!ctx2d) {
+        inputCanvasComponent = EL.inputCanvas.components["canvas-material"];
+        ctx2d                = inputCanvasComponent.getContext();
+        ctx2d.strokeStyle    = '#ffff00';
+        ctx2d.lineWidth      = 20;
+        ctx2d.lineCap        = "round";
+    }
+
+    if (res.isEnd) {
+        xPoints = [];
+        yPoints = [];
+    } else {
+        xPoints.push(CENTERX + res.dx * 0.5);
+        yPoints.push(CENTERY + res.dy * 0.5);
+    }
+
+    drawPointsToCanvas();
+
+}
+
+function drawPointsToCanvas() {
+    ctx2d.clearRect(0, 0, 512, 512);
+    ctx2d.beginPath();
+    ctx2d.moveTo(256, 256);
+    for (var i = 0; i < xPoints.length; i++) {
+        ctx2d.lineTo(xPoints[i], yPoints[i]);
+    }
+    ctx2d.stroke();
+    inputCanvasComponent.updateTexture();
+}
+
 function initNetwork() {
     network
         .init({
             useSocketIO : true,
             url         : location.protocol + '//' + location.hostname + ':3001'
         })
+        .on('xy', onXY)
         .on('angular', onAngular);
 }
 

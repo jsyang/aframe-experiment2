@@ -721,38 +721,67 @@ var network;
 var originX = 0;
 var originY = 0;
 
+function pointStart(e) {
+    originX = e.pageX;
+    originY = e.pageY;
+}
+
+function pointMove(e) {
+    network.emit('xy', {
+        dx : e.pageX - originX,
+        dy : e.pageY - originY
+    });
+}
+
+function pointEnd(e) {
+    network.emit('xy', {
+        dx    : e.pageX - originX,
+        dy    : e.pageY - originY,
+        isEnd : true
+    });
+}
+
+// Mouse events
+var isMouseDown = false;
+
+function onMouseDown(e) {
+    pointStart(e);
+    isMouseDown = true;
+}
+
+function _onMouseMove(e) {
+    if (isMouseDown) {
+        pointMove(e);
+    }
+}
+
+function onMouseUp(e) {
+    pointEnd(e);
+    isMouseDown = false;
+}
+
+// Touch events
+
 function onTouchStart(e) {
     var t = e.changedTouches;
 
     // Support single touch point
     if (t.length === 1) {
-        originX = t[0].pageX;
-        originY = t[0].pageY;
+        pointStart(t[0]);
     }
-}
 
-var dX     = 0;
-var prevDX = 0;
-var dY     = 0;
-var prevDY = 0;
+    stop(e);
+}
 
 function _onTouchMove(e) {
     var t = e.changedTouches;
 
     // Support single touch point
     if (t.length === 1) {
-        dX = t[0].pageX - originX;
-        dY = t[0].pageY - originY;
-
-        // Send update
-        network.emit('xy', {
-            dx : -dX,
-            dy : -dY
-        });
-
-        prevDY = dY;
-        prevDX = dX;
+        pointMove(t[0]);
     }
+
+    stop(e);
 }
 
 function onTouchEnd(e) {
@@ -760,27 +789,27 @@ function onTouchEnd(e) {
 
     // Support single touch point
     if (t.length === 1) {
-        dX = t[0].pageX - originX;
-        dY = t[0].pageY - originY;
-
-        // Send update
-        network.emit('xy', {
-            dx         : dX,
-            dy         : dY,
-            isTouchEnd : true
-        });
-
-        dX     = 0;
-        prevDX = 0;
-        dY     = 0;
-        prevDY = 0;
+        pointEnd(t[0]);
     }
+
+    stop(e);
+}
+
+function stop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
 }
 
 var onTouchMove = throttle(_onTouchMove, 10);
+var onMouseMove = throttle(_onMouseMove, 10);
 
 function init(networkInstance) {
     network = networkInstance;
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+
     window.addEventListener('touchstart', onTouchStart);
     window.addEventListener('touchmove', onTouchMove);
     window.addEventListener('touchend', onTouchEnd);
@@ -788,6 +817,10 @@ function init(networkInstance) {
 
 function remove() {
     network = null;
+    window.removeEventListener('mousedown', onMouseDown);
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+
     window.removeEventListener('touchstart', onTouchStart);
     window.removeEventListener('touchmove', onTouchMove);
     window.removeEventListener('touchend', onTouchEnd);
@@ -836,7 +869,8 @@ function init(options) {
         window.firebase.initializeApp(FIREBASE_CONFIG);
 
         firebaseDeviceId = options.deviceId;
-        firebaseRef = window.firebase.database().ref('sessions/' + firebaseDeviceId);
+        firebaseRef      = window.firebase.database().ref('sessions/' + firebaseDeviceId);
+        return firebaseRef;
     }
 }
 
@@ -849,7 +883,7 @@ function emit(eventName, eventValue) {
         window.socket.emit(eventName, eventValue);
     } else if (useFirebase) {
         firebaseRef.set({
-            eventName : eventName,
+            eventName  : eventName,
             eventValue : eventValue
         });
     }
@@ -861,11 +895,12 @@ function emit(eventName, eventValue) {
  * @returns {*}
  */
 function on(eventName, eventHandlerFunc) {
-    if(useSocketIO){
+    if (useSocketIO) {
         window.socket.on(eventName, eventHandlerFunc);
         return window.socket;
-    } else if(useFirebase) {
-
+    } else if (useFirebase) {
+        firebaseRef.on(eventName, eventHandlerFunc);
+        return firebaseRef;
     }
 }
 

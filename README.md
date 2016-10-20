@@ -60,11 +60,14 @@ Polished version of devices connecting to others via WebRTC + WebSockets. Differ
     [DIY version](http://hackaday.com/2016/10/12/ask-hackaday-diy-handwriting-recognition)
     [$1 unistroke recognizer](http://depts.washington.edu/aimgroup/proj/dollar)
 
-- [Frustuhttps://jesstelford.github.io/aframe-frustum-lock-component/
+- [Frustum Lock component](https://jesstelford.github.io/aframe-frustum-lock-component/)
+
+- [ReDollar gesture recognizer](https://github.com/finscn/ReDollar)
+
 ## Existing VR Guidelines
 
 - [Unreal Engine VR Guidelines Doc](https://docs.unrealengine.com/latest/INT/Platforms/VR/ContentSetup/)
-
+- [Hololens Design Patterns](http://8ninths.com/hololens-design-patterns/)
 
 ## Blender Recap
 

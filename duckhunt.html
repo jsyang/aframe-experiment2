@@ -1,0 +1,62 @@
+<html>
+<head>
+    <script src="lib/firebase.3.4.1.js"></script>
+    <script src="lib/aframe.0.3.0.min.js"></script>
+    <script src="lib/aframe-line-component.js"></script>
+
+    <script src="lib/socket.io.1.2.0.js"></script>
+
+    <script src="duckhunt.dist.js"></script>
+</head>
+<body>
+
+<a-scene id="scene">
+    <a-assets>
+        <a-mixin id="fpVertex" geometry="radius: 0.1" material="color: #dddd22"></a-mixin>
+        <a-mixin id="fpLine" material="color: #dddd22"></a-mixin>
+
+        <img id="duckAcrossLeft1" src="assets/duckhunt/duckAcrossLeft1.png">
+        <img id="duckAcrossLeft2" src="assets/duckhunt/duckAcrossLeft2.png">
+        <img id="duckAcrossLeft3" src="assets/duckhunt/duckAcrossLeft3.png">
+
+        <img id="background" src="assets/duckhunt/background.png">
+        <img id="tree" src="assets/duckhunt/tree.png">
+    </a-assets>
+
+
+    <!-- CAMERA -->
+    <a-camera wasd-controls="enabled:false">
+        <a-entity raycaster="interval: 40; objects: .interactive" position="0 0 -1"></a-entity>
+    </a-camera>
+
+    <!-- SCENE -->
+    <a-sphere id="targetCursorSphere"></a-sphere>
+
+    <a-plane class="interactive duck" id="duck1" width="1.5" height="1.5"
+             material="shader:flat;side:double;transparent:true;src:#duckAcrossLeft1"
+             position="0 6 -12"></a-plane>
+
+    <a-plane class="interactive tree" id="tree1"
+             material="shader:flat;side:double;transparent:true;src:#tree" position="-3.83 2.95 -13.42"
+             geometry="primitive:plane;width:3.52;height:4.8" rotation="0 25.783100780887047 0"></a-plane>
+
+    <a-plane id="ground" width="16" height="16"
+             material="shader:flat; color:rgb(202,107,27)"
+             rotation="-90 0 0"
+             position="0 0 0"></a-plane>
+
+    <a-cylinder id="bg2" width="16" height="8"
+                material="shader:flat;side:double;transparent:true;src:#background;depthTest:false;repeat:2 1;width:514.72;height:254.18;fog:false;roughness:1;flatShading:false;color:#ffffff;opacity:1"
+                position="0 4 0" scale="1 1 1"
+                geometry="primitive:cylinder;height:8;radius:8;segmentsRadial:8;segmentsHeight:1;openEnded:true">
+    </a-cylinder>
+
+
+    <a-sky material="color:rgb(72,161,241)"></a-sky>
+
+</a-scene>
+
+
+</body>
+
+</html>

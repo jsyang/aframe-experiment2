@@ -31,20 +31,17 @@ var isMouseDown = false;
 function onMouseDown(e) {
     pointStart(e);
     isMouseDown = true;
-    stop(e);
 }
 
 function _onMouseMove(e) {
     if (isMouseDown) {
         pointMove(e);
     }
-    stop(e);
 }
 
 function onMouseUp(e) {
     pointEnd(e);
     isMouseDown = false;
-    stop(e);
 }
 
 // Touch events

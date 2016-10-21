@@ -1,3 +1,4 @@
+var audio   = require('./audio');
 var network = require('./network');
 
 var EL = {
@@ -10,7 +11,15 @@ var STATE = {};
 //////////////////////////////////////////////////////////////////////////////////////////
 
 function onFirebaseValue(res) {
+    if (res.eventName === 'gyronorm') {
+        var v = res.eventValue;
 
+    } else if (res.eventName === 'tap') {
+        audio.playSoundFile('shot');
+
+        if (intersectedDuck) {
+        }
+    }
 }
 
 /*
@@ -20,20 +29,33 @@ function onFirebaseValue(res) {
  };
  */
 
-var NETWORK_SETTINGS = {
-    useFirebase : true,
-    deviceId    : ''
-};
+function getNetworkSettings() {
+    var deviceId = prompt('deviceId', localStorage.getItem('deviceId'));
+    localStorage.setItem('deviceId', deviceId);
+
+    return {
+        useFirebase : true,
+        deviceId    : deviceId
+    };
+}
 
 function initNetwork() {
     network
-        .init(NETWORK_SETTINGS)
+        .init(getNetworkSettings())
         .on('value', onFirebaseValue);
 }
 
-function onDuckIntersected() {
+var intersectedDuck;
 
+function onDuck1Intersected() {
+    intersectedDuck = EL.duck1;
 }
+
+function onDuck1IntersectedCleared() {
+    intersectedDuck = undefined;
+}
+
+////////////// DUCK ANIMATIONS
 
 var DUCK_PREFIX = '#duckAcrossLeft';
 var i           = 1;
@@ -57,15 +79,24 @@ function animateDuck() {
     requestAnimationFrame(animateDuck);
 }
 
+////////////// DOM BOILERPLATE
+
 function onDOMContentLoaded() {
     // Run all values as selectors and save in place
     Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
 
-    EL.duck1
-        .addEventListener('raycaster-intersected', onDuckIntersected);
+    EL.duck1.addEventListener('raycaster-intersected', onDuck1Intersected);
+    EL.duck1.addEventListener('raycaster-intersected-cleared', onDuck1IntersectedCleared);
 
     initNetwork();
     animateDuck();
+
+    audio.init({
+        from   : 'assets/duckhunt/',
+        sounds : {
+            shot : 'shot.wav'
+        }
+    });
 }
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);

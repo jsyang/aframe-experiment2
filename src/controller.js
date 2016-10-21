@@ -54,11 +54,6 @@ function getDeviceMode() {
     return mode;
 }
 
-// Network mode
-
-function getNetworkMode() {
-    return 'socketio';
-}
 
 // Network status
 
@@ -90,15 +85,57 @@ function onConnectError() {
     EL.networkStatus.className = 'yellow';
 }
 
-function initNetwork() {
-    network
-        .init({
+function toggleNetworkMode() {
+    var networkMode = localStorage.getItem('networkMode') || 'socketio';
+
+    if (networkMode === 'firebase') {
+        networkMode = 'socketio';
+    } else {
+        networkMode = 'firebase';
+    }
+
+    localStorage.setItem('networkMode', networkMode);
+}
+
+function getNetworkMode() {
+    return localStorage.getItem('networkMode') || 'socketio';
+}
+
+function getNetworkSettings() {
+    var networkMode = getNetworkMode();
+
+    if (networkMode === 'firebase') {
+        var deviceId = prompt('deviceId', localStorage.getItem('deviceId'));
+        localStorage.setItem('deviceId', deviceId);
+
+        return {
+            useFirebase : true,
+            deviceId    : deviceId
+        };
+    } else if (networkMode === 'socketio') {
+        return {
             useSocketIO : true,
             url         : location.protocol + '//' + location.hostname + ':3001'
-        })
-        .on('connect', onConnect)
-        .on('connect_error', onConnectError)
-        .on('reconnect_failed', onReconnectFailed);
+        }
+    }
+}
+
+function initNetwork() {
+    var networkMode = getNetworkMode();
+
+    if (networkMode === 'socketio') {
+        network
+            .init(getNetworkSettings())
+            .on('connect', onConnect)
+            .on('connect_error', onConnectError)
+            .on('reconnect_failed', onReconnectFailed);
+    } else {
+        // todo: firebase reconnection stuff
+        network
+            .init(getNetworkSettings());
+        onConnect();
+    }
+
 }
 
 var mapDeviceModeToInputObject = {
@@ -130,19 +167,30 @@ function onDeviceModeClick() {
 }
 
 function onDeviceIdClick() {
+    var oldDeviceId = getDeviceId();
+
     updateDeviceId(prompt(
         'Enter a new id for this device',
-        getDeviceId()
+        oldDeviceId
     ));
-    updateTable();
+
+    if (getDeviceId() !== oldDeviceId) {
+        location.reload();
+    }
+}
+
+function onNetworkModeClick() {
+    toggleNetworkMode();
+    location.reload();
 }
 
 function onDOMContentLoaded() {
     // Run all values as selectors and save in place
     Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
 
-    EL.deviceId.onclick   = onDeviceIdClick;
-    EL.deviceMode.onclick = onDeviceModeClick;
+    EL.deviceId.onclick    = onDeviceIdClick;
+    EL.deviceMode.onclick  = onDeviceModeClick;
+    EL.networkMode.onclick = onNetworkModeClick;
 
     initNetwork();
     initInput();

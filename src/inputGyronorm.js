@@ -1,3 +1,5 @@
+var inputTap = require('./inputTap');
+
 var network;
 
 var GYRONORM_CONFIG = { frequency : 25, decimalCount : 0 };
@@ -19,6 +21,8 @@ function onGyroNormData(data) {
 }
 
 function init(networkInstance) {
+    inputTap.init(networkInstance);
+
     network = networkInstance;
     gn      = new GyroNorm();
     gn
@@ -28,6 +32,8 @@ function init(networkInstance) {
 }
 
 function remove() {
+    inputTap.remove();
+
     if (gn) {
         gn.stop();
         gn.end();

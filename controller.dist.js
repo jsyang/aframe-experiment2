@@ -298,11 +298,6 @@ function getDeviceMode() {
     return mode;
 }
 
-// Network mode
-
-function getNetworkMode() {
-    return 'socketio';
-}
 
 // Network status
 
@@ -334,15 +329,57 @@ function onConnectError() {
     EL.networkStatus.className = 'yellow';
 }
 
-function initNetwork() {
-    network
-        .init({
+function toggleNetworkMode() {
+    var networkMode = localStorage.getItem('networkMode') || 'socketio';
+
+    if (networkMode === 'firebase') {
+        networkMode = 'socketio';
+    } else {
+        networkMode = 'firebase';
+    }
+
+    localStorage.setItem('networkMode', networkMode);
+}
+
+function getNetworkMode() {
+    return localStorage.getItem('networkMode') || 'socketio';
+}
+
+function getNetworkSettings() {
+    var networkMode = getNetworkMode();
+
+    if (networkMode === 'firebase') {
+        var deviceId = prompt('deviceId', localStorage.getItem('deviceId'));
+        localStorage.setItem('deviceId', deviceId);
+
+        return {
+            useFirebase : true,
+            deviceId    : deviceId
+        };
+    } else if (networkMode === 'socketio') {
+        return {
             useSocketIO : true,
             url         : location.protocol + '//' + location.hostname + ':3001'
-        })
-        .on('connect', onConnect)
-        .on('connect_error', onConnectError)
-        .on('reconnect_failed', onReconnectFailed);
+        }
+    }
+}
+
+function initNetwork() {
+    var networkMode = getNetworkMode();
+
+    if (networkMode === 'socketio') {
+        network
+            .init(getNetworkSettings())
+            .on('connect', onConnect)
+            .on('connect_error', onConnectError)
+            .on('reconnect_failed', onReconnectFailed);
+    } else {
+        // todo: firebase reconnection stuff
+        network
+            .init(getNetworkSettings());
+        onConnect();
+    }
+
 }
 
 var mapDeviceModeToInputObject = {
@@ -374,19 +411,30 @@ function onDeviceModeClick() {
 }
 
 function onDeviceIdClick() {
+    var oldDeviceId = getDeviceId();
+
     updateDeviceId(prompt(
         'Enter a new id for this device',
-        getDeviceId()
+        oldDeviceId
     ));
-    updateTable();
+
+    if (getDeviceId() !== oldDeviceId) {
+        location.reload();
+    }
+}
+
+function onNetworkModeClick() {
+    toggleNetworkMode();
+    location.reload();
 }
 
 function onDOMContentLoaded() {
     // Run all values as selectors and save in place
     Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
 
-    EL.deviceId.onclick   = onDeviceIdClick;
-    EL.deviceMode.onclick = onDeviceModeClick;
+    EL.deviceId.onclick    = onDeviceIdClick;
+    EL.deviceMode.onclick  = onDeviceModeClick;
+    EL.networkMode.onclick = onNetworkModeClick;
 
     initNetwork();
     initInput();
@@ -394,7 +442,7 @@ function onDOMContentLoaded() {
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
 window.ontouchmove = function (e) { e.preventDefault(); };
-},{"./getHashId":8,"./inputAngular":9,"./inputGyronorm":10,"./inputXY":11,"./network":12}],7:[function(require,module,exports){
+},{"./getHashId":8,"./inputAngular":9,"./inputGyronorm":10,"./inputXY":12,"./network":13}],7:[function(require,module,exports){
 var load = require('audio-loader');
 var oscillator;
 var audioContext;
@@ -672,7 +720,9 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{"./controllerAudioFeedback":7,"./throttle":13}],10:[function(require,module,exports){
+},{"./controllerAudioFeedback":7,"./throttle":14}],10:[function(require,module,exports){
+var inputTap = require('./inputTap');
+
 var network;
 
 var GYRONORM_CONFIG = { frequency : 25, decimalCount : 0 };
@@ -694,6 +744,8 @@ function onGyroNormData(data) {
 }
 
 function init(networkInstance) {
+    inputTap.init(networkInstance);
+
     network = networkInstance;
     gn      = new GyroNorm();
     gn
@@ -703,6 +755,8 @@ function init(networkInstance) {
 }
 
 function remove() {
+    inputTap.remove();
+
     if (gn) {
         gn.stop();
         gn.end();
@@ -713,7 +767,42 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{}],11:[function(require,module,exports){
+},{"./inputTap":11}],11:[function(require,module,exports){
+var network;
+
+function emitTap() {
+    network.emit('tap', true);
+}
+
+// Mouse events
+
+function onMouseUp() {
+    emitTap();
+}
+
+// Touch events
+
+function onTouchEnd() {
+    emitTap();
+}
+
+function init(networkInstance) {
+    network = networkInstance;
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('touchend', onTouchEnd);
+}
+
+function remove() {
+    network = null;
+    window.removeEventListener('mouseup', onMouseUp);
+    window.removeEventListener('touchend', onTouchEnd);
+}
+
+module.exports = {
+    init   : init,
+    remove : remove
+};
+},{}],12:[function(require,module,exports){
 var throttle = require('./throttle');
 
 var network;
@@ -830,7 +919,7 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{"./throttle":13}],12:[function(require,module,exports){
+},{"./throttle":14}],13:[function(require,module,exports){
 var useSocketIO = false;
 var useFirebase = false;
 
@@ -909,7 +998,7 @@ module.exports = {
     emit : emit,
     on   : on
 };
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = function throttle(fn, threshhold, scope) {
     threshhold || (threshhold = 250);
     var last, deferTimer;

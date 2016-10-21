@@ -284,47 +284,72 @@ var audio   = require('./audio');
 var network = require('./network');
 
 var EL = {
-    scene : null,
-    duck1 : null
+    scene      : null,
+    duck1      : null,
+    zapper     : null,
+    hitArea    : null,
+    sightField : null,
+    sightLine  : null
 };
 
 var STATE = {};
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-function onFirebaseValue(res) {
-    if (res.eventName === 'gyronorm') {
-        var v = res.eventValue;
+function onGyronorm(value) {
+    var rotation = value.rotation.split(' ').map(parseFloat);
+    rotation[0] += 90;
+    EL.zapper.setAttribute('rotation', rotation.join(' '));
+}
 
-    } else if (res.eventName === 'tap') {
-        audio.playSoundFile('shot');
+function onTap() {
+    audio.playSoundFile('shot');
 
-        if (intersectedDuck) {
-        }
+    if (intersectedDuck) {
+        audio.playSoundFile('end');
     }
 }
 
-/*
- var NETWORK_SETTINGS = {
- useSocketIO : true,
- url         : location.protocol + '//' + location.hostname + ':3001'
- };
- */
+function onFirebaseValue(res) {
+    res = res.val();
+    if (res.eventName === 'gyronorm') {
+        onGyronorm(res.eventValue);
+    } else if (res.eventName === 'tap') {
+        onTap();
+    }
+}
+
+var useFirebase = false;
 
 function getNetworkSettings() {
-    var deviceId = prompt('deviceId', localStorage.getItem('deviceId'));
-    localStorage.setItem('deviceId', deviceId);
+    if (useFirebase) {
+        var deviceId = prompt('deviceId', localStorage.getItem('deviceId'));
+        localStorage.setItem('deviceId', deviceId);
 
-    return {
-        useFirebase : true,
-        deviceId    : deviceId
-    };
+        return {
+            useFirebase : true,
+            deviceId    : deviceId
+        };
+    } else {
+        return {
+            useSocketIO : true,
+            url         : location.protocol + '//' + location.hostname + ':3001'
+        };
+    }
 }
 
 function initNetwork() {
-    network
-        .init(getNetworkSettings())
-        .on('value', onFirebaseValue);
+    if (useFirebase) {
+        network
+            .init(getNetworkSettings())
+            .on('value', onFirebaseValue);
+    } else {
+        network
+            .init(getNetworkSettings())
+            .on('tap', onTap)
+            .on('gyronorm', onGyronorm);
+    }
+
 }
 
 var intersectedDuck;
@@ -361,6 +386,11 @@ function animateDuck() {
     requestAnimationFrame(animateDuck);
 }
 
+function onSightFieldIntersected(e) {
+    var vec3 = e.detail.intersection.point;
+    EL.hitArea.setAttribute('position', vec3);
+}
+
 ////////////// DOM BOILERPLATE
 
 function onDOMContentLoaded() {
@@ -370,13 +400,16 @@ function onDOMContentLoaded() {
     EL.duck1.addEventListener('raycaster-intersected', onDuck1Intersected);
     EL.duck1.addEventListener('raycaster-intersected-cleared', onDuck1IntersectedCleared);
 
+    EL.sightField.addEventListener('raycaster-intersected', onSightFieldIntersected);
+
     initNetwork();
     animateDuck();
 
     audio.init({
         from   : 'assets/duckhunt/',
         sounds : {
-            shot : 'shot.wav'
+            shot : 'shot.wav',
+            end  : 'end.mp3'
         }
     });
 }

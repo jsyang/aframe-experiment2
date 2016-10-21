@@ -327,6 +327,7 @@ function onReconnectFailed() {
 function onConnectError() {
     isConnected                = false;
     EL.networkStatus.className = 'yellow';
+    updateTable();
 }
 
 function toggleNetworkMode() {
@@ -858,8 +859,6 @@ function onTouchStart(e) {
     if (t.length === 1) {
         pointStart(t[0]);
     }
-
-    stop(e);
 }
 
 function _onTouchMove(e) {
@@ -870,7 +869,6 @@ function _onTouchMove(e) {
         pointMove(t[0]);
     }
 
-    stop(e);
 }
 
 function onTouchEnd(e) {
@@ -880,8 +878,6 @@ function onTouchEnd(e) {
     if (t.length === 1) {
         pointEnd(t[0]);
     }
-
-    stop(e);
 }
 
 function stop(e) {

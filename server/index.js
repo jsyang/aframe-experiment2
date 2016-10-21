@@ -12,8 +12,14 @@ function onTap(s, a) {
     s.broadcast.emit('tap', a);
 }
 
+function onGyronorm(s, a) {
+    console.log(a);
+    s.broadcast.emit('gyronorm', a);
+}
+
 function onConnection(socket) {
     socket
+        .on('gyronorm', onGyronorm.bind(null, socket))
         .on('tap', onTap.bind(null, socket))
         .on('xy', onXY.bind(null, socket))
         .on('angular', onAngular.bind(null, socket));

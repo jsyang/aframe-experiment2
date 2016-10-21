@@ -12,9 +12,6 @@
 
 <a-scene id="scene">
     <a-assets>
-        <a-mixin id="fpVertex" geometry="radius: 0.1" material="color: #dddd22"></a-mixin>
-        <a-mixin id="fpLine" material="color: #dddd22"></a-mixin>
-
         <img id="duckAcrossLeft1" src="assets/duckhunt/duckAcrossLeft1.png">
         <img id="duckAcrossLeft2" src="assets/duckhunt/duckAcrossLeft2.png">
         <img id="duckAcrossLeft3" src="assets/duckhunt/duckAcrossLeft3.png">
@@ -24,13 +21,14 @@
     </a-assets>
 
 
-    <!-- CAMERA -->
-    <a-camera wasd-controls="enabled:false">
-        <a-entity raycaster="interval: 40; objects: .interactive" position="0 0 -1"></a-entity>
-    </a-camera>
-
     <!-- SCENE -->
-    <a-sphere id="targetCursorSphere"></a-sphere>
+
+    <a-sphere id="sightField" radius="24"
+              class="interactive"
+              material="opacity:0.6;side:back; visible:false">
+    </a-sphere>
+
+    <a-sphere radius="0.2" material="color:#ff0000; opacity: 1" id="hitArea"></a-sphere>
 
     <a-plane class="interactive duck" id="duck1" width="1.5" height="1.5"
              material="shader:flat;side:double;transparent:true;src:#duckAcrossLeft1"
@@ -45,8 +43,21 @@
              rotation="-90 0 0"
              position="0 0 0"></a-plane>
 
+    <!-- CAMERA -->
+    <a-camera wasd-controls="enabled:true">
+        <a-cylinder id="zapper" material="shader:flat;color:rgb(205,48,3);flatShading:true"
+                    geometry="primitive:cylinder;radius:0.05;segmentsRadial:6;segmentsHeight:1;height:0.8"
+                    position="0 -0.3 -1"
+                    rotation="90 0 0">
+            <a-entity raycaster="interval: 10; objects: .interactive" scale="1 1 -1" rotation="90 0 0"></a-entity>
+            <a-box geometry="width:0.08;height:0.1;depth:0.3" position="0 0.25 0.1" rotation="-30 0 0"></a-box>
+        </a-cylinder>
+
+    </a-camera>
+
+
     <a-cylinder id="bg2" width="16" height="8"
-                material="shader:flat;side:double;transparent:true;src:#background;depthTest:false;repeat:2 1;width:514.72;height:254.18;fog:false;roughness:1;flatShading:false;color:#ffffff;opacity:1"
+                material="shader:flat;side:double;transparent:true;src:#background;depthTest:true;repeat:2 1;width:514.72;height:254.18;fog:false;roughness:1;flatShading:false;color:#ffffff;opacity:1"
                 position="0 4 0" scale="1 1 1"
                 geometry="primitive:cylinder;height:8;radius:8;segmentsRadial:8;segmentsHeight:1;openEnded:true">
     </a-cylinder>

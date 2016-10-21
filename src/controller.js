@@ -83,6 +83,7 @@ function onReconnectFailed() {
 function onConnectError() {
     isConnected                = false;
     EL.networkStatus.className = 'yellow';
+    updateTable();
 }
 
 function toggleNetworkMode() {

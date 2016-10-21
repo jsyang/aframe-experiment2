@@ -2,7 +2,7 @@
 <head>
     <script src="lib/firebase.3.4.1.js"></script>
     <script src="lib/aframe.0.3.0.min.js"></script>
-    <script src="lib/aframe-line-component.js"></script>
+    <script src="lib/aframe-material-overdraw-component.js"></script>
 
     <script src="lib/socket.io.1.2.0.js"></script>
 
@@ -15,6 +15,21 @@
         <img id="duckAcrossLeft1" src="assets/duckhunt/duckAcrossLeft1.png">
         <img id="duckAcrossLeft2" src="assets/duckhunt/duckAcrossLeft2.png">
         <img id="duckAcrossLeft3" src="assets/duckhunt/duckAcrossLeft3.png">
+        <img id="duckAcrossRight1" src="assets/duckhunt/duckAcrossRight1.png">
+        <img id="duckAcrossRight2" src="assets/duckhunt/duckAcrossRight2.png">
+        <img id="duckAcrossRight3" src="assets/duckhunt/duckAcrossRight3.png">
+        
+        <img id="duckUpLeft1" src="assets/duckhunt/duckUpLeft1.png">
+        <img id="duckUpLeft2" src="assets/duckhunt/duckUpLeft2.png">
+        <img id="duckUpLeft3" src="assets/duckhunt/duckUpLeft3.png">
+        <img id="duckUpRight1" src="assets/duckhunt/duckUpRight1.png">
+        <img id="duckUpRight2" src="assets/duckhunt/duckUpRight2.png">
+        <img id="duckUpRight3" src="assets/duckhunt/duckUpRight3.png">
+
+        <img id="duckDown1" src="assets/duckhunt/duckDown1.png">
+        <img id="duckDown2" src="assets/duckhunt/duckDown2.png">
+
+        <img id="duckShot" src="assets/duckhunt/duckShot.png">
 
         <img id="background" src="assets/duckhunt/background.png">
         <img id="tree" src="assets/duckhunt/tree.png">
@@ -30,13 +45,15 @@
 
     <a-sphere radius="0.2" material="color:#ff0000; opacity: 1" id="hitArea"></a-sphere>
 
-    <a-plane class="interactive duck" id="duck1" width="1.5" height="1.5"
-             material="shader:flat;side:double;transparent:true;src:#duckAcrossLeft1"
-             position="0 6 -12"></a-plane>
-
     <a-plane class="interactive tree" id="tree1"
              material="shader:flat;side:double;transparent:true;src:#tree" position="-3.83 2.95 -13.42"
              geometry="primitive:plane;width:3.52;height:4.8" rotation="0 25.783100780887047 0"></a-plane>
+
+
+    <a-plane class="interactive duck" id="duck1" width="1.5" height="1.5"
+             material="shader:flat;side:double;transparent:true;src:#duckAcrossLeft1"
+             position="0 0 -12"></a-plane>
+
 
     <a-plane id="ground" width="16" height="16"
              material="shader:flat; color:rgb(202,107,27)"
@@ -44,7 +61,7 @@
              position="0 0 0"></a-plane>
 
     <!-- CAMERA -->
-    <a-camera wasd-controls="enabled:true">
+    <a-camera wasd-controls="enabled:false">
         <a-cylinder id="zapper" material="shader:flat;color:rgb(205,48,3);flatShading:true"
                     geometry="primitive:cylinder;radius:0.05;segmentsRadial:6;segmentsHeight:1;height:0.8"
                     position="0 -0.3 -1"
@@ -57,6 +74,7 @@
 
 
     <a-cylinder id="bg2" width="16" height="8"
+                material-overdraw="overdraw:0.8"
                 material="shader:flat;side:double;transparent:true;src:#background;depthTest:true;repeat:2 1;width:514.72;height:254.18;fog:false;roughness:1;flatShading:false;color:#ffffff;opacity:1"
                 position="0 4 0" scale="1 1 1"
                 geometry="primitive:cylinder;height:8;radius:8;segmentsRadial:8;segmentsHeight:1;openEnded:true">

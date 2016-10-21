@@ -31,17 +31,20 @@ var isMouseDown = false;
 function onMouseDown(e) {
     pointStart(e);
     isMouseDown = true;
+    stop(e);
 }
 
 function _onMouseMove(e) {
     if (isMouseDown) {
         pointMove(e);
     }
+    stop(e);
 }
 
 function onMouseUp(e) {
     pointEnd(e);
     isMouseDown = false;
+    stop(e);
 }
 
 // Touch events
@@ -53,8 +56,6 @@ function onTouchStart(e) {
     if (t.length === 1) {
         pointStart(t[0]);
     }
-
-    stop(e);
 }
 
 function _onTouchMove(e) {
@@ -65,7 +66,6 @@ function _onTouchMove(e) {
         pointMove(t[0]);
     }
 
-    stop(e);
 }
 
 function onTouchEnd(e) {
@@ -75,8 +75,6 @@ function onTouchEnd(e) {
     if (t.length === 1) {
         pointEnd(t[0]);
     }
-
-    stop(e);
 }
 
 function stop(e) {

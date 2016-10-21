@@ -375,12 +375,28 @@ function nextDuckFrame() {
     }
 }
 
+var duckPosition = {
+    x : 0,
+    y : 6,
+    z : -12
+};
+
 var lastFrameTime = new Date();
 function animateDuck() {
     var currentTime = new Date();
-    if (currentTime - lastFrameTime >= 200) {
+
+    var dTime = currentTime - lastFrameTime;
+    if (dTime >= 200) {
         nextDuckFrame();
         lastFrameTime = currentTime;
+    }
+
+    if (dTime >= 20) {
+        duckPosition.x -= 0.1;
+        if(duckPosition.x < -24) {
+            duckPosition.x = 24;
+        }
+        EL.duck1.setAttribute('position', duckPosition);
     }
 
     requestAnimationFrame(animateDuck);

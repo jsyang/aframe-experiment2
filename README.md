@@ -8,6 +8,7 @@ npm i ; grunt
 
 ## Learnings
 
+- [Google W3C WebVR presentation](https://docs.google.com/presentation/d/1CSgOsiyn2PeLGlJCnrmmTYv9FLE_dmCaVKp7fZ-SF2I/edit?usp=sharing)
 - Models with faces that have more than 3 vertices will not load in THREE.js loaders (which is what AFrame is using)
 - Ctrl + Alt + I opens the AFrame Inspector which you can use to rearrange entities in the scene. You can
 copy the resultant HTML
@@ -64,10 +65,14 @@ Polished version of devices connecting to others via WebRTC + WebSockets. Differ
 
 - [ReDollar gesture recognizer](https://github.com/finscn/ReDollar)
 
+- [Cannon.js 3D non-ported physics](http://schteppe.github.io/cannon.js/)
+
 ## Existing VR Guidelines
 
 - [Unreal Engine VR Guidelines Doc](https://docs.unrealengine.com/latest/INT/Platforms/VR/ContentSetup/)
 - [Hololens Design Patterns](http://8ninths.com/hololens-design-patterns/)
+- [GooCreate](https://goocreate.com/product)
+WebGL creation tool
 
 ## Blender Recap
 

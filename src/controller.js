@@ -13,12 +13,14 @@ var EL = {
     settingsOverlay : null,
     settingsTable   : null,
 
-    deviceIdRow      : null,
-    deviceId         : null,
-    deviceMode       : null,
-    networkMode      : null,
-    networkStatus    : null,
-    showHideSettings : null
+    deviceIdRow       : null,
+    deviceId          : null,
+    deviceMode        : null,
+    networkAddress    : null,
+    networkAddressRow : null,
+    networkMode       : null,
+    networkStatus     : null,
+    showHideSettings  : null
 };
 
 // Device id
@@ -72,15 +74,18 @@ function updateTable() {
     EL.networkStatus.className = isConnected ? 'green' : 'red';
 
     if (getNetworkMode() === 'firebase') {
+        EL.networkAddressRow.classList.add('hide');
         EL.deviceIdRow.classList.remove('hide');
         EL.deviceId.value = getDeviceId();
     } else {
         EL.deviceIdRow.classList.add('hide');
+        EL.networkAddressRow.classList.remove('hide');
     }
 }
 
 function onConnect() {
     isConnected = true;
+    network.emit('networkAddressRequest', true);
     updateTable();
 }
 
@@ -130,12 +135,17 @@ function getNetworkSettings() {
     }
 }
 
+function onNetworkAddressResponse(res){
+    EL.networkAddress.value = res;
+}
+
 function initNetwork() {
     var networkMode = getNetworkMode();
 
     if (networkMode === 'socketio') {
         network
             .init(getNetworkSettings())
+            .on('networkAddressResponse', onNetworkAddressResponse)
             .on('connect', onConnect)
             .on('connect_error', onConnectError)
             .on('reconnect_failed', onReconnectFailed);
@@ -147,6 +157,10 @@ function initNetwork() {
     }
 
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Input management
 
 var mapDeviceModeToInputObject = {
     xy       : inputXY,

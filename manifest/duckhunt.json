@@ -1,0 +1,16 @@
+{
+  "name": "Cardboard Duck Hunt VR",
+  "background_color": "#48A1F1",
+  "description": "Poor man's VR Duck Hunt for Cardboard VR",
+  "icons": [
+    {
+      "src": "assets/duckhunt/duck-hunt-box-art.jpg",
+      "sizes": "256x256",
+      "type": "image/jpeg",
+      "density": 1.0
+    }
+  ],
+  "start_url": "duckhunt.html",
+  "display": "standalone",
+  "orientation": "landscape"
+}

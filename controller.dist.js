@@ -254,11 +254,15 @@ var isConnected = false;
 // DOM Element cache
 
 var EL = {
-    deviceId        : null,
-    deviceMode      : null,
-    networkMode     : null,
-    networkStatus   : null,
-    openControlArea : null
+    settingsOverlay : null,
+    settingsTable   : null,
+
+    deviceIdRow      : null,
+    deviceId         : null,
+    deviceMode       : null,
+    networkMode      : null,
+    networkStatus    : null,
+    showHideSettings : null
 };
 
 // Device id
@@ -298,7 +302,6 @@ function getDeviceMode() {
     return mode;
 }
 
-
 // Network status
 
 function getNetworkStatus() {
@@ -306,12 +309,18 @@ function getNetworkStatus() {
 }
 
 function updateTable() {
-    EL.deviceId.value    = getDeviceId();
     EL.deviceMode.value  = getDeviceMode();
     EL.networkMode.value = getNetworkMode();
 
     EL.networkStatus.value     = getNetworkStatus();
     EL.networkStatus.className = isConnected ? 'green' : 'red';
+
+    if (getNetworkMode() === 'firebase') {
+        EL.deviceIdRow.classList.remove('hide');
+        EL.deviceId.value = getDeviceId();
+    } else {
+        EL.deviceIdRow.classList.add('hide');
+    }
 }
 
 function onConnect() {
@@ -399,16 +408,17 @@ function removeInput() {
         .remove();
 }
 
-function onDeviceModeClick() {
-    removeInput();
-    updateDeviceMode(
-        prompt(
-            'valid modes are: ' + DEVICE_MODE.replace(/\|/g, ', '),
-            getDeviceMode()
-        )
-    );
-    initInput();
-    updateTable();
+function onDeviceModeChange(e) {
+    var selectEl   = e.target;
+    var deviceMode = selectEl.options[selectEl.selectedIndex].value;
+
+    if (getDeviceMode() !== deviceMode) {
+        console.log('device mode changed to ', deviceMode);
+        removeInput();
+        updateDeviceMode(deviceMode);
+        initInput();
+        updateTable();
+    }
 }
 
 function onDeviceIdClick() {
@@ -429,19 +439,31 @@ function onNetworkModeClick() {
     location.reload();
 }
 
+function onShowHideSetttingsClick() {
+    EL.settingsTable.classList.toggle('show');
+    EL.settingsOverlay.classList.toggle('show');
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Entry point
+
 function onDOMContentLoaded() {
     // Run all values as selectors and save in place
     Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
 
-    EL.deviceId.onclick    = onDeviceIdClick;
-    EL.deviceMode.onclick  = onDeviceModeClick;
-    EL.networkMode.onclick = onNetworkModeClick;
+    EL.deviceId.onclick         = onDeviceIdClick;
+    EL.deviceMode.onchange      = onDeviceModeChange;
+    EL.networkMode.onclick      = onNetworkModeClick;
+    EL.showHideSettings.onclick = onShowHideSetttingsClick;
 
     initNetwork();
     initInput();
 }
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
+
+// Stop touch bounce of web page
 window.ontouchmove = function (e) { e.preventDefault(); };
 },{"./getHashId":8,"./inputAngular":9,"./inputGyronorm":10,"./inputXY":12,"./network":13}],7:[function(require,module,exports){
 var load = require('audio-loader');

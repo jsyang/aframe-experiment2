@@ -1,75 +1,48 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
     <script src="lib/gyronorm.min.js"></script>
     <script src="lib/firebase.3.4.1.js"></script>
     <script src="lib/socket.io.1.2.0.js"></script>
 
     <script src="controller.dist.js"></script>
-
-    <style>
-        .heading {
-            font-weight : bold;
-        }
-
-        .green {
-            color : green;
-        }
-
-        .yellow {
-            color : tan;
-        }
-
-        .red {
-            color : red;
-        }
-
-        .positionAbsolute {
-            position : absolute;
-            top      : 0;
-            left     : 0;
-        }
-
-        .circle {
-            width         : 64px;
-            height        : 64px;
-            background    : rgba(64, 64, 64, 0.3);
-            border-radius : 64px;
-            overflow      : hidden;
-            margin-left   : -32px;
-            margin-top    : -32px;
-        }
-
-        .circleSmall {
-            width         : 32px;
-            height        : 32px;
-            background    : rgba(0, 0, 0, 0.6);
-            border-radius : 32px;
-            overflow      : hidden;
-            margin-left   : -16px;
-            margin-top    : -16px;
-        }
-
-    </style>
+    <link rel="stylesheet" href="controller.css">
 </head>
 <body>
 
-<table>
-    <tr>
-        <td class="heading">Controller ID</td>
-        <td><input type="button" id="deviceId"></td>
-    </tr>
+<div id="settingsOverlay"></div>
+
+<table id="settingsTable" cellspacing="8">
     <tr>
         <td class="heading">Controller Mode</td>
-        <td><input type="button" id="deviceMode"></td>
+        <td>
+            <select id="deviceMode">
+                <option value="gyronorm">gyronorm</option>
+                <option value="xy">xy</option>
+                <option value="angular">angular</option>
+            </select>
+        </td>
     </tr>
     <tr>
         <td class="heading">Network Mode</td>
         <td><input type="button" id="networkMode"></td>
     </tr>
+
+    <tr id="deviceIdRow">
+        <td class="heading">Controller ID</td>
+        <td><input type="button" id="deviceId"></td>
+    </tr>
+
     <tr>
         <td class="heading">Network Status</td>
         <td><input type="button" id="networkStatus"></td>
+    </tr>
+
+    <tr>
+        <td colspan="2">
+            <input type="button" id="showHideSettings" value="Show / Hide Controller Settings">
+        </td>
     </tr>
 </table>
 

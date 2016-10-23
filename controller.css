@@ -1,0 +1,101 @@
+/** Settings **/
+
+#settingsOverlay {
+    position       : absolute;
+    left           : 0;
+    top            : 0;
+    right          : 0;
+    bottom         : 0;
+    background     : rgba(0, 0, 0, 0.2);
+    transition     : opacity 0.2s ease;
+    opacity        : 0;
+    z-index        : 1;
+    pointer-events : none;
+}
+
+#settingsOverlay.show {
+    opacity        : 1;
+    pointer-events : all;
+}
+
+#settingsTable {
+    position      : absolute;
+    top           : 50%;
+    left          : 50%;
+    transform     : translate(-50%, calc(-50vh - 100% + 56px));
+    background    : #eee;
+    padding       : 8px;
+    border-radius : 4px;
+    z-index       : 2;
+    transition    : all 0.4s ease;
+}
+
+#settingsTable.show {
+    transform : translate(-50%, -50%);
+}
+
+#settingsTable input,
+#settingsTable select {
+    width     : 100%;
+    font-size : 1em;
+    margin    : 4px;
+}
+
+#settingsTable .heading {
+    font-weight : bold;
+    font-family : sans-serif;
+}
+
+/** Generics **/
+
+* {
+    -webkit-user-select : none;
+    -moz-user-select    : none;
+    -ms-user-select     : none;
+    user-select         : none;
+    cursor              : pointer;
+}
+
+.hide {
+    display : none !important;
+}
+
+.green {
+    color : green;
+}
+
+.yellow {
+    color : tan;
+}
+
+.red {
+    color : red;
+}
+
+.positionAbsolute {
+    position : absolute;
+    top      : 0;
+    left     : 0;
+}
+
+/* Angular input controls */
+
+.circle {
+    width         : 64px;
+    height        : 64px;
+    background    : rgba(64, 64, 64, 0.3);
+    border-radius : 64px;
+    overflow      : hidden;
+    margin-left   : -32px;
+    margin-top    : -32px;
+}
+
+.circleSmall {
+    width         : 32px;
+    height        : 32px;
+    background    : rgba(0, 0, 0, 0.6);
+    border-radius : 32px;
+    overflow      : hidden;
+    margin-left   : -16px;
+    margin-top    : -16px;
+}

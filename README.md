@@ -78,3 +78,12 @@ Polished version of devices connecting to others via WebRTC + WebSockets. Differ
 ## Notable AFrame projects
 
 - [Sense of promise](http://senseofpromise.com)
+
+## AR libraries
+
+- [JS Aruco](https://github.com/jcmellado/js-aruco)
+
+
+# Duck hunt resources
+
+- [SFX](http://downloads.khinsider.com/game-soundtracks/album/duck-hunt)

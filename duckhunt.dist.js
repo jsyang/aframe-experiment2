@@ -509,9 +509,11 @@ function animateDuck1() {
             }
             STATE.duck1LastFrameTime = now;
 
-            if(STATE.duck1Position.y > 1 && Math.random() < STATE.duck1DirectionChangeChance) {
-                    setDuck1RandomDirection();
+            if (STATE.duck1Position.y > 1 && Math.random() < STATE.duck1DirectionChangeChance) {
+                setDuck1RandomDirection();
             }
+
+            audio.playSoundFile('flapping');
         }
 
         if (dTime > 20) {
@@ -587,11 +589,12 @@ function onDOMContentLoaded() {
     audio.init({
         from   : 'assets/duckhunt/',
         sounds : {
-            drop : 'drop.mp3',
-            down : 'down.mp3',
-            duck : 'duck.mp3',
-            shot : 'shot.wav',
-            end  : 'end.mp3'
+            flapping : 'flapping.mp3',
+            drop     : 'drop.mp3',
+            down     : 'down.mp3',
+            duck     : 'duck.mp3',
+            shot     : 'shot.wav',
+            end      : 'end.mp3'
         }
     });
 

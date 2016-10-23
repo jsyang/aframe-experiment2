@@ -5,6 +5,15 @@
 var io = require('socket.io')(3001);
 var os = require('os');
 
+////////////////////////////////////////////////////////////////////////////////
+
+// Broadcasts
+
+function onKBMouse(s, a) {
+    console.log(a);
+    s.broadcast.emit('kbmouse', a);
+}
+
 function onXY(s, a) {
     s.broadcast.emit('xy', a);
 }
@@ -21,6 +30,10 @@ function onGyronorm(s, a) {
     s.broadcast.emit('gyronorm', a);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+// Return to sender
+
 function onNetworkAddressRequest(s, a) {
     var en0 = os.networkInterfaces()['en0'];
 
@@ -31,11 +44,18 @@ function onNetworkAddressRequest(s, a) {
     s.emit('networkAddressResponse', ipv4);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+// Entry point
+
 function onConnection(socket) {
     socket
         .on('networkAddressRequest', onNetworkAddressRequest.bind(null, socket))
+
         .on('gyronorm', onGyronorm.bind(null, socket))
         .on('tap', onTap.bind(null, socket))
+
+        .on('kbmouse', onKBMouse.bind(null, socket))
         .on('xy', onXY.bind(null, socket))
         .on('angular', onAngular.bind(null, socket));
 }

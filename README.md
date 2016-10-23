@@ -71,8 +71,15 @@ Polished version of devices connecting to others via WebRTC + WebSockets. Differ
 
 - [Unreal Engine VR Guidelines Doc](https://docs.unrealengine.com/latest/INT/Platforms/VR/ContentSetup/)
 - [Hololens Design Patterns](http://8ninths.com/hololens-design-patterns/)
+
 - [GooCreate](https://goocreate.com/product)
 WebGL creation tool
+
+- [Vizor creation tool](http://vizor.io)
+
+- [Ray-input](https://github.com/borismus/ray-input)
+Similar to the solution that's to be created, but mine is substitution of inputs as a way to
+keep the experience interactive.
 
 ## Blender Recap
 

@@ -247,6 +247,8 @@ var network = require('./network');
 var inputXY       = require('./inputXY');
 var inputGyronorm = require('./inputGyronorm');
 var inputAngular  = require('./inputAngular');
+var inputKBMouse  = require('./inputKBMouse');
+
 var getHashId     = require('./getHashId');
 
 var isConnected = false;
@@ -285,7 +287,7 @@ function getDeviceId() {
 
 // Device mode
 
-var DEVICE_MODE        = 'xy|gyronorm|angular';
+var DEVICE_MODE        = 'xy|gyronorm|angular|kbmouse';
 var REGEXP_DEVICE_MODE = new RegExp(DEVICE_MODE);
 
 function updateDeviceMode(mode) {
@@ -379,7 +381,7 @@ function getNetworkSettings() {
     }
 }
 
-function onNetworkAddressResponse(res){
+function onNetworkAddressResponse(res) {
     EL.networkAddress.value = res;
 }
 
@@ -409,7 +411,8 @@ function initNetwork() {
 var mapDeviceModeToInputObject = {
     xy       : inputXY,
     gyronorm : inputGyronorm,
-    angular  : inputAngular
+    angular  : inputAngular,
+    kbmouse  : inputKBMouse
 };
 
 function initInput() {
@@ -479,7 +482,7 @@ document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
 
 // Stop touch bounce of web page
 window.ontouchmove = function (e) { e.preventDefault(); };
-},{"./getHashId":8,"./inputAngular":9,"./inputGyronorm":10,"./inputXY":12,"./network":13}],7:[function(require,module,exports){
+},{"./getHashId":8,"./inputAngular":9,"./inputGyronorm":10,"./inputKBMouse":11,"./inputXY":13,"./network":14}],7:[function(require,module,exports){
 var load = require('audio-loader');
 var oscillator;
 var audioContext;
@@ -757,7 +760,7 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{"./controllerAudioFeedback":7,"./throttle":14}],10:[function(require,module,exports){
+},{"./controllerAudioFeedback":7,"./throttle":15}],10:[function(require,module,exports){
 var inputTap = require('./inputTap');
 
 var network;
@@ -804,7 +807,101 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{"./inputTap":11}],11:[function(require,module,exports){
+},{"./inputTap":12}],11:[function(require,module,exports){
+var throttle = require('./throttle');
+
+var network;
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Mouse
+
+function _onMouseMove(e) {
+    network.emit('kbmouse', {
+        isMouse : true,
+        dx      : e.movementX,
+        dy      : e.movementY,
+        buttons : e.buttons
+    });
+}
+
+function onMouseDown(e) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
+    network.emit('kbmouse', {
+        isMouse : true,
+        buttons : e.buttons
+    });
+}
+
+function onMouseUp(e) {
+    // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
+    network.emit('kbmouse', {
+        isMouse : true,
+        buttons : e.buttons
+    });
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Keyboard
+
+function onKeyUp(e) {
+    network.emit('kbmouse', {
+        isKB  : true,
+        which : e.which
+    });
+    stop(e);
+}
+
+function onKeyDown(e) {
+    network.emit('kbmouse', {
+        isKB  : true,
+        which : e.which
+    });
+    stop(e);
+}
+
+function stop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+}
+
+var onMouseMove = throttle(_onMouseMove, 10);
+
+function requestPointerLock(){
+    document.body.requestPointerLock();
+}
+
+function init(networkInstance) {
+    network = networkInstance;
+
+    document.body.onclick = requestPointerLock;
+
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('keydown', onKeyDown);
+}
+
+function remove() {
+    network = null;
+
+    window.removeEventListener('mousedown', onMouseDown);
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+
+    window.removeEventListener('keyup', onKeyUp);
+    window.removeEventListener('keydown', onKeyDown);
+}
+
+module.exports = {
+    init   : init,
+    remove : remove
+};
+},{"./throttle":15}],12:[function(require,module,exports){
 var network;
 
 function emitTap() {
@@ -839,7 +936,7 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var throttle = require('./throttle');
 
 var network;
@@ -951,7 +1048,7 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{"./throttle":14}],13:[function(require,module,exports){
+},{"./throttle":15}],14:[function(require,module,exports){
 var useSocketIO = false;
 var useFirebase = false;
 
@@ -1030,7 +1127,7 @@ module.exports = {
     emit : emit,
     on   : on
 };
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = function throttle(fn, threshhold, scope) {
     threshhold || (threshhold = 250);
     var last, deferTimer;

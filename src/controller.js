@@ -3,6 +3,8 @@ var network = require('./network');
 var inputXY       = require('./inputXY');
 var inputGyronorm = require('./inputGyronorm');
 var inputAngular  = require('./inputAngular');
+var inputKBMouse  = require('./inputKBMouse');
+
 var getHashId     = require('./getHashId');
 
 var isConnected = false;
@@ -41,7 +43,7 @@ function getDeviceId() {
 
 // Device mode
 
-var DEVICE_MODE        = 'xy|gyronorm|angular';
+var DEVICE_MODE        = 'xy|gyronorm|angular|kbmouse';
 var REGEXP_DEVICE_MODE = new RegExp(DEVICE_MODE);
 
 function updateDeviceMode(mode) {
@@ -135,7 +137,7 @@ function getNetworkSettings() {
     }
 }
 
-function onNetworkAddressResponse(res){
+function onNetworkAddressResponse(res) {
     EL.networkAddress.value = res;
 }
 
@@ -165,7 +167,8 @@ function initNetwork() {
 var mapDeviceModeToInputObject = {
     xy       : inputXY,
     gyronorm : inputGyronorm,
-    angular  : inputAngular
+    angular  : inputAngular,
+    kbmouse  : inputKBMouse
 };
 
 function initInput() {

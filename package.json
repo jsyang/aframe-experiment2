@@ -15,6 +15,7 @@
     "grunt-contrib-watch": "~0.6.0",
     "load-grunt-config": "^0.19.2",
     "load-grunt-tasks": "^3.5.0",
-    "socket.io": "^1.5.0"
+    "socket.io": "^1.5.0",
+    "webdriverio": "^4.2.16"
   }
 }

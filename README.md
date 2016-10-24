@@ -69,6 +69,7 @@ Polished version of devices connecting to others via WebRTC + WebSockets. Differ
 
 ## Existing VR Guidelines
 
+- [Google Cardboard VR design specs](https://developers.google.com/vr/android/)
 - [Unreal Engine VR Guidelines Doc](https://docs.unrealengine.com/latest/INT/Platforms/VR/ContentSetup/)
 - [Hololens Design Patterns](http://8ninths.com/hololens-design-patterns/)
 
@@ -99,3 +100,23 @@ keep the experience interactive.
 # Duck hunt resources
 
 - [SFX](http://downloads.khinsider.com/game-soundtracks/album/duck-hunt)
+
+# Conduit tech
+
+- [selenium-standalone](https://github.com/vvo/selenium-standalone)
+
+```
+npm install selenium-standalone@latest -g
+selenium-standalone install
+selenium-standalone start
+```
+
+- [webdriverio](http://webdriver.io)
+
+```
+npm install webdriverio --save-dev
+```
+
+- [Webdriver usage example](https://github.com/webdriverio/webdriverio/blob/master/examples/standalone/webdriverio.with.nodeunit.js)
+
+- [RobotJS desktop automation](http://robotjs.io/docs/)

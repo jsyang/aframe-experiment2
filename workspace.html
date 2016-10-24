@@ -5,6 +5,7 @@
 
     <!-- JS -->
     <script src="lib/aframe.0.3.0.min.js"></script>
+    <script src="lib/aframe-canvas-component.js"></script>
 
     <script src="lib/socket.io.1.2.0.js"></script>
 
@@ -25,14 +26,10 @@
         <a-entity raycaster="interval: 10; objects: .interactive" scale="1 1 -1" rotation="90 0 0"></a-entity>
     </a-camera>
 
-    <a-plane id="wdioClientScreen1" class="interactive" width="8" height="6" material="flatShading:true; color: #222222"
-             geometry="primitive:plane;width:8;height:6" position="0 2 -8"></a-plane>
-
-    <a-plane id="wdioClientScreen2" class="interactive" width="8" height="6" material="flatShading:true; color: #222222"
-             geometry="primitive:plane;width:8;height:6" position="-10 2 -5" rotation="0 45 0"></a-plane>
-
-    <a-plane id="wdioClientScreen3" class="interactive" width="8" height="6" material="flatShading:true; color: #222222"
-             geometry="primitive:plane;width:8;height:6" position="10 2 -5" rotation="0 -45 0"></a-plane>
+    <a-plane id="wdioClientScreen1" class="interactive"
+             material="shader:flat;flatShading:true;"
+             canvas-material="width: 2560; height: 1600"
+             geometry="primitive:plane;width:12.8;height:8" position="0 2 -8"></a-plane>
 
     <a-sky material="color:rgb(10,10,10)"></a-sky>
 

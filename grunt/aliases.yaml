@@ -1,6 +1,7 @@
 default:
   - browserify
   - connect
-  - ioserver
   - watch
+#  - ioserver
+
 

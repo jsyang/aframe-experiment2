@@ -1,8 +1,10 @@
 /**
  * SocketIO server should mostly only act as a dumb pipe.
+ * Bugs:
+ *   - robotjs fails to open a core graphics connection when run through Grunt
  */
-
-var wdio = require('webdriverio');
+var robot = require('robotjs');
+var wdio  = require('webdriverio');
 
 var io = require('socket.io')(3001);
 var os = require('os');
@@ -83,7 +85,14 @@ function onWDIOClientRequest(s, a) {
     } else if (a.requestType === 'screenshot') {
         client
             .saveScreenshot('./screenshot.png')
-            .call(onWDIOClientRequestFulfilled.bind(s,'screenshot'));
+            .call(onWDIOClientRequestFulfilled.bind(s, 'screenshot'));
+    }
+}
+
+function onRobotJSRequest(s, a) {
+    if (a.requestType === 'screenshot') {
+        var i = robot.screen.capture();
+        s.emit('robotJSScreenshot', i.image);
     }
 }
 
@@ -100,6 +109,7 @@ function onConnection(socket) {
         .on('angular', onAngular.bind(null, socket))
 
         .on('networkAddressRequest', onNetworkAddressRequest.bind(null, socket))
+        .on('robotJSRequest', onRobotJSRequest.bind(null, socket))
         .on('wdioClientRequest', onWDIOClientRequest.bind(null, socket));
 }
 

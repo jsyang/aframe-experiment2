@@ -81,55 +81,8 @@ module.exports = {
 var network = require('./network');
 
 var EL = {
-    scene             : null,
-    wdioClientScreen1 : null,
-    wdioClientScreen2 : null,
-    wdioClientScreen3 : null
+    wdioClientScreen1 : null
 };
-
-////////////////////////////////////////////////////////////////////////////////
-
-// Mouse interaction
-
-var ctx2d;
-var inputCanvasComponent;
-var CENTERX = 256;
-var CENTERY = 256;
-
-var xPoints = [];
-var yPoints = [];
-
-function onXY(res) {
-    if (!ctx2d) {
-        inputCanvasComponent = EL.inputCanvas.components["canvas-material"];
-        ctx2d                = inputCanvasComponent.getContext();
-        ctx2d.strokeStyle    = '#ffff00';
-        ctx2d.lineWidth      = 20;
-        ctx2d.lineCap        = "round";
-    }
-
-    if (res.isEnd) {
-        xPoints = [];
-        yPoints = [];
-    } else {
-        xPoints.push(CENTERX + res.dx * 0.5);
-        yPoints.push(CENTERY + res.dy * 0.5);
-    }
-
-    drawPointsToCanvas();
-
-}
-
-function drawPointsToCanvas() {
-    ctx2d.clearRect(0, 0, 512, 512);
-    ctx2d.beginPath();
-    ctx2d.moveTo(256, 256);
-    for (var i = 0; i < xPoints.length; i++) {
-        ctx2d.lineTo(xPoints[i], yPoints[i]);
-    }
-    ctx2d.stroke();
-    inputCanvasComponent.updateTexture();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -139,10 +92,33 @@ function onWDIOClientResponse(res) {
     console.log('wdioClientResponse', res);
 
     if (res[0] === 'screenshot') {
-        EL.wdioClientScreen1.setAttribute(
-            'material', 'src', 'url(screenshot.png?' + new Date() + ')'
-        );
+
     }
+}
+
+function updateClientScreen1() {
+    EL.wdioClientScreen1.setAttribute(
+        'material', 'src', 'url(screenshot.jpg?' + (+new Date()) + ')'
+    );
+}
+
+var ctx2d;
+var canvasMaterialComponent;
+
+var SCREEN_WIDTH  = 1280 * 2;
+var SCREEN_HEIGHT = 800 * 2;
+
+function onRobotJSScreenshot(buffer) {
+    console.log('buf recvd');
+    if (ctx2d) {
+        var imageData = new ImageData(new Uint8ClampedArray(buffer), SCREEN_WIDTH, SCREEN_HEIGHT);
+        ctx2d.putImageData(imageData, 0, 0);
+        canvasMaterialComponent.updateTexture();
+    } else {
+        canvasMaterialComponent = EL.wdioClientScreen1.components["canvas-material"];
+        ctx2d                   = canvasMaterialComponent.getContext();
+    }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -155,6 +131,7 @@ function initNetwork() {
             useSocketIO : true,
             url         : location.protocol + '//' + location.hostname + ':3001'
         })
+        .on('robotJSScreenshot', onRobotJSScreenshot)
         .on('wdioClientResponse', onWDIOClientResponse);
 }
 
@@ -167,11 +144,16 @@ function onDOMContentLoaded() {
     Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
 
     initNetwork();
+    setInterval(sendScreenshotRequest, 300);
 }
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
 
 // debug stuff
+
+function sendScreenshotRequest() {
+    network.emit('robotJSRequest', { requestType : 'screenshot' });
+}
 
 function sendWDIORequest(req) {
     network.emit('wdioClientRequest', req);
@@ -191,11 +173,13 @@ window.req2 = sendWDIORequest.bind(null, {
     requestValue : { width : 800, height : 600 }
 });
 
-window.req3 = sendWDIORequest.bind(null, {
-    requestType  : 'url',
-    clientId     : 'abc',
-    requestValue : 'http://reddit.com'
-});
+window.req3 = function (url) {
+    sendWDIORequest({
+        requestType  : 'url',
+        clientId     : 'abc',
+        requestValue : url
+    });
+};
 
 window.req4 = sendWDIORequest.bind(null, {
     requestType  : 'screenshot',

@@ -3,8 +3,9 @@
  * Bugs:
  *   - robotjs fails to open a core graphics connection when run through Grunt
  */
-var robot = require('robotjs');
-var wdio  = require('webdriverio');
+var robot                 = require('robotjs');
+var wdio                  = require('webdriverio');
+var wdioElementScreenshot = require('wdio-element-screenshot');
 
 var io = require('socket.io')(3001);
 var os = require('os');
@@ -48,7 +49,7 @@ function onNetworkAddressRequest(s, a) {
     s.emit('networkAddressResponse', ipv4);
 }
 
-var WDIO_REMOTE_CLIENT_SETTINGS = { desiredCapabilities : { browserName : 'chrome' } };
+var WDIO_REMOTE_CLIENT_SETTINGS = { desiredCapabilities : { browserName : 'chrome' }, singleton : true };
 
 var wdioClients = {};
 
@@ -64,6 +65,7 @@ function onWDIOClientRequest(s, a) {
     if (!client) {
         wdioClients[a.clientId] = wdio.remote(WDIO_REMOTE_CLIENT_SETTINGS);
         client                  = wdioClients[a.clientId];
+        wdioElementScreenshot.init(client);
     }
 
     if (a.requestType === 'init') {
@@ -84,8 +86,18 @@ function onWDIOClientRequest(s, a) {
             .call(onWDIOClientRequestFulfilled.bind(s));
     } else if (a.requestType === 'screenshot') {
         client
-            .saveScreenshot('./screenshot.png')
-            .call(onWDIOClientRequestFulfilled.bind(s, 'screenshot'));
+            .saveScreenshot()
+            .then(
+                function (buffer) {
+                    onWDIOClientRequestFulfilled.call(s, 'screenshot', buffer.toString('base64'));
+                }
+            );
+    } else if (a.requestType === 'elementScreenshot') {
+        client
+            .takeElementScreenshot(a.requestValue)
+            .then(function (buffer) {
+                onWDIOClientRequestFulfilled.call(s, 'elementScreenshot', buffer.toString('base64'));
+            });
     }
 }
 

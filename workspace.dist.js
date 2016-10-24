@@ -144,7 +144,7 @@ function onDOMContentLoaded() {
     Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
 
     initNetwork();
-    setInterval(sendScreenshotRequest, 300);
+    setInterval(sendScreenshotRequest, 600);
 }
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);

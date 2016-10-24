@@ -1,0 +1,47 @@
+<html>
+<head>
+    <script src="lib/aframe.0.3.0.min.js"></script>
+    <script src="lib/aframe-cubemap-component.js"></script>
+    <script src="lib/aframe-line-component.js"></script>
+    <script src="lib/aframe-polygon-component.js"></script>
+    <script src="lib/aframe-canvas-component.js"></script>
+
+    <script src="lib/socket.io.1.2.0.js"></script>
+
+    <script src="room.dist.js"></script>
+</head>
+<body>
+
+<a-scene id="scene">
+    <a-assets>
+        <a-mixin id="fpVertex" geometry="radius: 0.1" material="color: #dddd22"></a-mixin>
+        <a-mixin id="fpLine" material="color: #dddd22"></a-mixin>
+    </a-assets>
+
+
+    <!-- CAMERA -->
+    <a-camera>
+        <a-entity raycaster="interval: 50; objects: .interactive" position="0 0 -1"></a-entity>
+
+        <a-entity id="inputCanvas" canvas-material="width: 512; height: 512" position="0 0 -6"
+                  material="side:front; depthTest: false"
+                  geometry="primitive: plane; width: 2; height: 2"></a-entity>
+
+    </a-camera>
+
+    <!-- SCENE -->
+    <a-sphere id="floorCursorSphere" color="#dd2222" radius="0.4" id="cursor" material="opacity:0.6"></a-sphere>
+
+
+    <a-plane class="interactive" id="floor" width="256" height="256" rotation="-90 0 0" position="0 -1 0"
+             material="color: #222222; opacity: 0.2"></a-plane>
+
+
+    <a-entity id="skybox" cubemap="folder:assets/room/"></a-entity>
+
+</a-scene>
+
+
+</body>
+
+</html>

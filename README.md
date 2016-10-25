@@ -103,6 +103,8 @@ keep the experience interactive.
 
 # Conduit tech
 
+- [Electron app for the controller host](https://github.com/electron/electron)
+- [SocketIO iOS](http://socket.io/blog/socket-io-on-ios/)
 - [selenium-standalone](https://github.com/vvo/selenium-standalone)
 
 ```
@@ -112,11 +114,14 @@ selenium-standalone start
 ```
 
 - [webdriverio](http://webdriver.io)
+- [Inversion of control in a DooM mod](https://www.youtube.com/watch?v=KNxPfHon-wY)
+
+- [3D Scene to cubemap for streaming to cubemap viewer?](https://www.npmjs.com/package/gl-render-cubemap)
 
 ```
 npm install webdriverio --save-dev
 ```
 
 - [Webdriver usage example](https://github.com/webdriverio/webdriverio/blob/master/examples/standalone/webdriverio.with.nodeunit.js)
-
+- [Capture entire web document](https://github.com/brenden/node-webshot)
 - [RobotJS desktop automation](http://robotjs.io/docs/)

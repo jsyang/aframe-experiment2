@@ -11,6 +11,7 @@
     <script src="lib/firebase.3.4.1.js"></script>
     <script src="lib/aframe.0.3.0.min.js"></script>
     <script src="lib/aframe-material-overdraw-component.js"></script>
+    <script src="lib/aframe-bmfont-text-component.min.js"></script>
 
     <script src="lib/socket.io.1.2.0.js"></script>
 
@@ -21,6 +22,9 @@
 
 <a-scene id="scene">
     <a-assets>
+        <a-mixin id="blueSky" material="color:rgb(72,161,241)"></a-mixin>
+        <a-mixin id="darkSky" material="color:rgb(9,20,30)"></a-mixin>
+
         <img id="duckAcrossLeft1" src="assets/duckhunt/duckAcrossLeft1.png">
         <img id="duckAcrossLeft2" src="assets/duckhunt/duckAcrossLeft2.png">
         <img id="duckAcrossLeft3" src="assets/duckhunt/duckAcrossLeft3.png">
@@ -52,7 +56,11 @@
               material="opacity:0.6;side:back; visible:false">
     </a-sphere>
 
-    <a-sphere radius="0.2" material="color:#ff0000; opacity: 1" id="hitArea"></a-sphere>
+    <a-sphere radius="0.2" material="color:#ff0000; opacity: 1" id="hitArea">
+        <a-plane id="hitBox" width="1" height="1"
+                 material="shader:flat; visible:false">
+        </a-plane>
+    </a-sphere>
 
     <a-plane class="interactive tree" id="tree1"
              material="shader:flat;side:double;transparent:true;src:#tree" position="-3.83 2.95 -13.42"
@@ -61,7 +69,8 @@
 
     <a-plane class="interactive duck" id="duck1" width="1.5" height="1.5"
              material="shader:flat;side:double;transparent:true;src:#duckAcrossLeft1"
-             position="0 0 -12"></a-plane>
+             position="0 0 -12">
+    </a-plane>
 
 
     <a-plane id="ground" width="16" height="16"
@@ -70,7 +79,7 @@
              position="0 0 0"></a-plane>
 
     <!-- CAMERA -->
-    <a-camera wasd-controls="enabled:false">
+    <a-camera wasd-controls="enabled:false" id="player">
         <a-cylinder id="zapper" material="shader:flat;color:rgb(205,48,3);flatShading:true"
                     geometry="primitive:cylinder;radius:0.05;segmentsRadial:6;segmentsHeight:1;height:0.8"
                     position="0 -0.3 -1"
@@ -90,7 +99,7 @@
     </a-cylinder>
 
 
-    <a-sky material="color:rgb(72,161,241)"></a-sky>
+    <a-sky id="sky" material="color:rgb(72,161,241)"></a-sky>
 
 </a-scene>
 

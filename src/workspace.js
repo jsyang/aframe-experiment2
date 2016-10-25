@@ -111,3 +111,25 @@ document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
 function sendScreenshotRequest() {
     network.emit('robotJSRequest', { requestType : 'screenshot' });
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Github API for Github VR Viewer
+
+function onGithubSearchResults(e) {
+    var jsonResponse = JSON.parse(e.currentTarget.responseText);
+    debugger;
+
+}
+
+function getGithubSearchResults(options) {
+    var xhr    = new XMLHttpRequest();
+    xhr.onload = onGithubSearchResults;
+    // https://developer.github.com/v3/search/#search-repositories
+    xhr.open('GET', 'https://api.github.com/search/repositories?q=aframe');
+    xhr.setRequestHeader(
+        "Authorization",
+        "Basic " + btoa(options.username + ":" + options.password)
+    );
+    xhr.send();
+}

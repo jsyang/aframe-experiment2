@@ -288,8 +288,11 @@ var EL = {
     duck1      : null,
     zapper     : null,
     hitArea    : null,
+    hitBox     : null,
     sightField : null,
-    sightLine  : null
+    sightLine  : null,
+    player     : null,
+    sky        : null
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -329,17 +332,41 @@ function getRandomInt(min, max) {
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
+// Shot fired effect
+
+var COLOR_DARK_SKY = 'rgb(9,20,30)';
+var COLOR_BLUE_SKY = 'rgb(72,161,241)';
+
+function applyShotFiredEffect() {
+    EL.sky.setAttribute('material', 'color', COLOR_DARK_SKY);
+    EL.hitArea.setAttribute('material', 'visible', false);
+    EL.hitBox.setAttribute('material', 'visible', true);
+}
+
+function removeShotFiredEffect() {
+    EL.sky.setAttribute('material', 'color', COLOR_BLUE_SKY);
+    EL.hitArea.setAttribute('material', 'visible', true);
+    EL.hitBox.setAttribute('material', 'visible', false);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
 // User events
 
 function onGyronorm(value) {
-    var rotation = value.rotation.split(' ').map(parseFloat);
-    rotation[0] += 90;
-    EL.zapper.setAttribute('rotation', rotation.join(' '));
+    var rotation       = value.rotation;
+    var playerRotation = EL.player.getAttribute('rotation');
+    rotation.x += 90;
+    rotation.x -= playerRotation.x;
+    rotation.y -= playerRotation.y;
+    rotation.z -= playerRotation.z;
+    EL.zapper.setAttribute('rotation', rotation);
 }
 
 function onTap() {
     if (STATE.shotsRemaining > 0) {
         audio.playSoundFile('shot');
+        applyShotFiredEffect();
 
         if (intersectedDuck === EL.duck1) {
             setDuck1StateToShot();
@@ -350,7 +377,12 @@ function onTap() {
         STATE.shotsRemaining = SHOT_CAPACITY;
     }
 
+    setTimeout(removeShotFiredEffect, 40);
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+// Network
 
 function onFirebaseValue(res) {
     res = res.val();
@@ -360,10 +392,6 @@ function onFirebaseValue(res) {
         onTap();
     }
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
-// Sensors
 
 var useFirebase = false;
 
@@ -397,6 +425,10 @@ function initNetwork() {
     }
 
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+// Game events
 
 var intersectedDuck;
 

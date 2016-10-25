@@ -8,11 +8,11 @@ var gn;
 function onGyroNormData(data) {
     // Send update
     network.emit('gyronorm', {
-        rotation : [
-            data.do.beta,
-            data.do.alpha,
-            data.do.gamma * -1
-        ].join(' '),
+        rotation : {
+            x : data.do.beta,
+            y : data.do.alpha,
+            z : data.do.gamma * -1
+        },
 
         dx : data.dm.x,
         dy : data.dm.y,

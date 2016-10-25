@@ -49,7 +49,10 @@ function onNetworkAddressRequest(s, a) {
     s.emit('networkAddressResponse', ipv4);
 }
 
-var WDIO_REMOTE_CLIENT_SETTINGS = { desiredCapabilities : { browserName : 'chrome' }, singleton : true };
+var WDIO_REMOTE_CLIENT_SETTINGS = {
+    desiredCapabilities : { browserName : 'chrome' },
+    singleton           : true
+};
 
 var wdioClients = {};
 

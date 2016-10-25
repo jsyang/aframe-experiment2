@@ -2,6 +2,7 @@ var load = require('audio-loader');
 var audioContext;
 
 var soundFilesBuffers;
+var deferredPlaySoundFile;
 
 function init(options) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -10,7 +11,7 @@ function init(options) {
 
 function remove() {
     soundFilesBuffers = undefined;
-    audioContext = undefined;
+    audioContext      = undefined;
 }
 
 // Load external sound files
@@ -19,14 +20,24 @@ function loadSoundFiles(source, options) {
     load(source, options)
         .then(function (audio) {
             soundFilesBuffers = audio;
+
+            // Play last sound that attempted to play before
+            // all audio was ready
+            if (deferredPlaySoundFile) {
+                playSoundFile(deferredPlaySoundFile);
+            }
         });
 }
 
 function playSoundFile(soundName) {
-    var source    = audioContext.createBufferSource();
-    source.buffer = soundFilesBuffers[soundName];
-    source.connect(audioContext.destination);
-    source.start();
+    if (soundFilesBuffers) {
+        var source    = audioContext.createBufferSource();
+        source.buffer = soundFilesBuffers[soundName];
+        source.connect(audioContext.destination);
+        source.start();
+    } else {
+        deferredPlaySoundFile = soundName;
+    }
 }
 
 module.exports = {

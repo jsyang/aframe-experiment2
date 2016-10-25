@@ -246,6 +246,7 @@ var load = require('audio-loader');
 var audioContext;
 
 var soundFilesBuffers;
+var deferredPlaySoundFile;
 
 function init(options) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -254,7 +255,7 @@ function init(options) {
 
 function remove() {
     soundFilesBuffers = undefined;
-    audioContext = undefined;
+    audioContext      = undefined;
 }
 
 // Load external sound files
@@ -263,14 +264,24 @@ function loadSoundFiles(source, options) {
     load(source, options)
         .then(function (audio) {
             soundFilesBuffers = audio;
+
+            // Play last sound that attempted to play before
+            // all audio was ready
+            if (deferredPlaySoundFile) {
+                playSoundFile(deferredPlaySoundFile);
+            }
         });
 }
 
 function playSoundFile(soundName) {
-    var source    = audioContext.createBufferSource();
-    source.buffer = soundFilesBuffers[soundName];
-    source.connect(audioContext.destination);
-    source.start();
+    if (soundFilesBuffers) {
+        var source    = audioContext.createBufferSource();
+        source.buffer = soundFilesBuffers[soundName];
+        source.connect(audioContext.destination);
+        source.start();
+    } else {
+        deferredPlaySoundFile = soundName;
+    }
 }
 
 module.exports = {
@@ -285,6 +296,7 @@ var network = require('./network');
 
 var EL = {
     scene      : null,
+    bg2        : null,
     duck1      : null,
     zapper     : null,
     hitArea    : null,
@@ -292,7 +304,8 @@ var EL = {
     sightField : null,
     sightLine  : null,
     player     : null,
-    sky        : null
+    sky        : null,
+    dog        : null
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -300,12 +313,20 @@ var EL = {
 // Game logic
 
 /** @constant */
-var SHOT_CAPACITY         = 3;
+var SHOT_CAPACITY        = 3;
+var DOG_WALK_SPEED       = 0.0125;
+var DOG_INITIAL_POSITION = {
+    x : -2,
+    y : 1.38,
+    z : -7
+};
+
 var DUCK_SPEED_SLOW       = 0.1;
 var DUCK_DIRECTIONS       = 'UpLeft,UpRight,AcrossLeft,AcrossRight'.split(',');
 var DUCK_START_DIRECTIONS = 'UpLeft,UpRight'.split(',');
 
 var STATE = {
+    rAF            : null,
     shotsRemaining : 3,
 
     // Animations
@@ -314,7 +335,6 @@ var STATE = {
     duck1StartFrame            : 1,
     duck1EndFrame              : 1,
     duck1LastFrameTime         : 0,
-    duck1RAF                   : null,
     duck1Alive                 : false,
     duck1DirectionChangeChance : 0.04,
 
@@ -323,7 +343,23 @@ var STATE = {
         x : 0,
         y : 0,
         z : -12
-    }
+    },
+
+    // Dog
+    dogActive                  : true,
+    dogBarks                   : 0,
+    dogMaxBarks                : 3,
+    dogSniffs                  : 0,
+    dogMaxSniffs               : 14,
+    dogState                   : 'Walk',
+    dogCurrentFrame            : 1,
+    dogStartFrame              : 1,
+    dogEndFrame                : 4,
+    dogFramesInCurrentState    : 0,
+    dogMaxFramesInCurrentState : 8,
+    dogLastFrameTime           : 0,
+
+    dogPosition : DOG_INITIAL_POSITION
 };
 
 function getRandomInt(min, max) {
@@ -428,25 +464,6 @@ function initNetwork() {
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-// Game events
-
-var intersectedDuck;
-
-function onDuck1Intersected() {
-    intersectedDuck = EL.duck1;
-}
-
-function onDuck1IntersectedCleared() {
-    intersectedDuck = undefined;
-}
-
-function onSightFieldIntersected(e) {
-    var vec3 = e.detail.intersection.point;
-    EL.hitArea.setAttribute('position', vec3);
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////
-
 // Ducks
 
 function setDuck1RandomDirection(isStart) {
@@ -461,7 +478,9 @@ function setDuck1RandomDirection(isStart) {
             ];
     }
 
-    audio.playSoundFile('duck');
+    if (getRandomInt(0, 2) === 1) {
+        audio.playSoundFile('duck');
+    }
 }
 
 function setDuck1StateToDown() {
@@ -479,7 +498,6 @@ function setDuck1StateToShot() {
 function setDuck1StateToNotAlive() {
     EL.duck1.setAttribute('material', 'visible', false);
     STATE.duck1Alive = false;
-    cancelAnimationFrame(STATE.duck1RAF);
 }
 
 function setDuck1StateToAliveWithRandomPosition() {
@@ -492,7 +510,6 @@ function setDuck1StateToAliveWithRandomPosition() {
     STATE.duck1CurrentFrame = 1;
     STATE.duck1StartFrame   = 1;
     STATE.duck1EndFrame     = 3;
-    cancelAnimationFrame(STATE.duck1RAF);
 }
 
 function animateDuck1() {
@@ -528,7 +545,7 @@ function animateDuck1() {
         }
 
     } else {
-        if (dTime >= 200) {
+        if (dTime > 150) {
             EL.duck1.setAttribute(
                 'material',
                 'src',
@@ -541,10 +558,9 @@ function animateDuck1() {
             }
             STATE.duck1LastFrameTime = now;
 
-            if (STATE.duck1Position.y > 1 && Math.random() < STATE.duck1DirectionChangeChance) {
+            if (STATE.duck1Position.y > 2 && Math.random() < STATE.duck1DirectionChangeChance) {
                 setDuck1RandomDirection();
             }
-
             audio.playSoundFile('flapping');
         }
 
@@ -571,7 +587,6 @@ function animateDuck1() {
 function tickDuck1() {
     if (STATE.duck1Alive) {
         animateDuck1();
-        STATE.duck1RAF = requestAnimationFrame(tickDuck1);
     } else {
         setDuck1StateToNotAlive();
     }
@@ -596,13 +611,188 @@ function moveDuck1(options) {
 
 function spawnDuck1() {
     setDuck1StateToAliveWithRandomPosition();
-    tickDuck1();
     STATE.duck1DirectionChangeChance += 0.005;
 }
 
 function randomSpawn() {
     setTimeout(spawnDuck1, getRandomInt(1200, 3000));
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+// Dog
+
+function resetDog() {
+    STATE.dogActive   = true;
+    STATE.dogPosition = DOG_INITIAL_POSITION;
+    STATE.dogSniffs   = 0;
+    STATE.dogBarks    = 0;
+    EL.dog.setAttribute('material', 'depthTest', false);
+}
+
+function setDogStateToWalk() {
+    STATE.dogState                   = 'Walk';
+    STATE.dogCurrentFrame            = 1;
+    STATE.dogStartFrame              = 1;
+    STATE.dogEndFrame                = 4;
+    STATE.dogFramesInCurrentState    = 0;
+    STATE.dogMaxFramesInCurrentState = getRandomInt(1, 8);
+}
+
+function setDogStateToSniff() {
+    STATE.dogState = 'Sniff';
+}
+
+function setDogStateToReady() {
+    STATE.dogState = 'Ready';
+}
+
+function setDogStateToJump() {
+    STATE.dogState         = 'Jump1';
+    STATE.dogLastFrameTime = new Date();
+}
+
+function setDogStateToJumpFall() {
+    STATE.dogState = 'Jump2';
+    EL.dog.setAttribute('material', 'depthTest', true);
+}
+
+function moveDog(options) {
+    if (options.dx) {
+        STATE.dogPosition.x += options.dx;
+    }
+
+    if (options.dy) {
+        STATE.dogPosition.y += options.dy;
+    }
+
+    if (options.dz) {
+        STATE.dogPosition.z += options.dz;
+    }
+
+    EL.dog.setAttribute('position', STATE.dogPosition);
+}
+
+function dogBark() {
+    if (STATE.dogBarks < STATE.dogMaxBarks) {
+        STATE.dogBarks++;
+        audio.playSoundFile('bark');
+        setTimeout(dogBark, 300);
+    }
+}
+
+function animateDog() {
+    var state = STATE.dogState;
+    var now   = new Date();
+    var dTime = now - STATE.dogLastFrameTime;
+
+    if (state === 'Walk') {
+        if (dTime > 80) {
+            EL.dog.setAttribute(
+                'material',
+                'src',
+                '#dog' + STATE.dogState + STATE.dogCurrentFrame
+            );
+
+            STATE.dogCurrentFrame++;
+            if (STATE.dogCurrentFrame > STATE.dogEndFrame) {
+                STATE.dogCurrentFrame = STATE.dogStartFrame;
+            }
+            STATE.dogLastFrameTime = now;
+            STATE.dogFramesInCurrentState++;
+
+            if (STATE.dogFramesInCurrentState === STATE.dogMaxFramesInCurrentState) {
+                if (STATE.dogSniffs > STATE.dogMaxSniffs) {
+                    setDogStateToReady();
+                } else {
+                    STATE.dogSniffs++;
+                    setDogStateToSniff();
+                }
+            }
+        }
+
+        if (dTime > 20) {
+            moveDog({ dx : DOG_WALK_SPEED });
+        }
+    } else if (state === 'Sniff') {
+        EL.dog.setAttribute('material', 'src', '#dogSniff');
+
+        if (dTime > 140) {
+            setDogStateToWalk();
+        }
+    } else if (state === 'Ready') {
+        EL.dog.setAttribute('material', 'src', '#dogReady');
+
+        if (dTime > 300) {
+            setDogStateToJump();
+            setTimeout(dogBark, 500);
+        }
+    } else if (state === 'Jump1' || state === 'Jump2') {
+        EL.dog.setAttribute('material', 'src', '#dog' + state);
+
+        if (state === 'Jump1') {
+            if (STATE.dogPosition.y < 3.5) {
+                moveDog({ dx : 0.02, dy : 0.12, dz : -0.08 });
+            } else {
+                setDogStateToJumpFall();
+                bg2TextureBlendHack();
+            }
+        } else if (state === 'Jump2') {
+            if (STATE.dogPosition.y > 1.38) {
+                moveDog({ dx : 0.01, dy : -0.1 });
+            } else {
+                // Trigger round start
+                randomSpawn();
+                STATE.dogActive = false;
+            }
+        }
+    }
+}
+
+function tickDog() {
+    if (STATE.dogActive) {
+        if (STATE.dogFramesInCurrentState <= STATE.dogMaxFramesInCurrentState) {
+            animateDog();
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+// Game events
+
+var intersectedDuck;
+
+function onDuck1Intersected() {
+    intersectedDuck = EL.duck1;
+}
+
+function onDuck1IntersectedCleared() {
+    intersectedDuck = undefined;
+}
+
+function onSightFieldIntersected(e) {
+    var vec3 = e.detail.intersection.point;
+    EL.hitArea.setAttribute('position', vec3);
+}
+
+function tick() {
+    tickDuck1();
+    tickDog();
+    STATE.rAF = requestAnimationFrame(tick);
+
+}
+
+var hackApplied = false;
+
+// Hack to get BG2 texture to blend correctly
+function bg2TextureBlendHack() {
+    if (!hackApplied) {
+        EL.bg2.components['material-overdraw'].update();
+        hackApplied = true;
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////
 
 // Entry point
@@ -621,16 +811,24 @@ function onDOMContentLoaded() {
     audio.init({
         from   : 'assets/duckhunt/',
         sounds : {
-            flapping : 'flapping.mp3',
-            drop     : 'drop.mp3',
-            down     : 'down.mp3',
-            duck     : 'duck.mp3',
-            shot     : 'shot.wav',
-            end      : 'end.mp3'
+            flapping      : 'flapping.mp3',
+            drop          : 'drop.mp3',
+            down          : 'down.mp3',
+            duck          : 'duck.mp3',
+            shot          : 'shot.mp3',
+            end           : 'end.mp3',
+            bark          : 'bark.mp3',
+            duckHuntIntro : 'duckHuntIntro.mp3'
         }
     });
 
-    randomSpawn();
+    //randomSpawn();
+    audio.playSoundFile('duckHuntIntro');
+    resetDog();
+    setDogStateToWalk();
+    tick();
+
+    window.EL = EL;
 }
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);

@@ -31,7 +31,7 @@
         <img id="duckAcrossRight1" src="assets/duckhunt/duckAcrossRight1.png">
         <img id="duckAcrossRight2" src="assets/duckhunt/duckAcrossRight2.png">
         <img id="duckAcrossRight3" src="assets/duckhunt/duckAcrossRight3.png">
-        
+
         <img id="duckUpLeft1" src="assets/duckhunt/duckUpLeft1.png">
         <img id="duckUpLeft2" src="assets/duckhunt/duckUpLeft2.png">
         <img id="duckUpLeft3" src="assets/duckhunt/duckUpLeft3.png">
@@ -46,6 +46,19 @@
 
         <img id="background" src="assets/duckhunt/background.png">
         <img id="tree" src="assets/duckhunt/tree.png">
+
+        <img id="dogSniff" src="assets/duckhunt/dogSniff.png">
+        <img id="dogReady" src="assets/duckhunt/dogReady.png">
+
+        <img id="dogJump1" src="assets/duckhunt/dogJump1.png">
+        <img id="dogJump2" src="assets/duckhunt/dogJump2.png">
+
+        <img id="dogWalk1" src="assets/duckhunt/dogWalk1.png">
+        <img id="dogWalk2" src="assets/duckhunt/dogWalk2.png">
+        <img id="dogWalk3" src="assets/duckhunt/dogWalk3.png">
+        <img id="dogWalk4" src="assets/duckhunt/dogWalk4.png">
+
+
     </a-assets>
 
 
@@ -56,7 +69,7 @@
               material="opacity:0.6;side:back; visible:false">
     </a-sphere>
 
-    <a-sphere radius="0.2" material="color:#ff0000; opacity: 1" id="hitArea">
+    <a-sphere radius="0.2" material="color:#ff0000" id="hitArea">
         <a-plane id="hitBox" width="1" height="1"
                  material="shader:flat; visible:false">
         </a-plane>
@@ -68,6 +81,11 @@
 
 
     <a-plane class="interactive duck" id="duck1" width="1.5" height="1.5"
+             material="shader:flat;side:double;transparent:true;src:#duckAcrossLeft1"
+             position="0 0 -12">
+    </a-plane>
+
+    <a-plane class="interactive duck" id="duck2" width="1.5" height="1.5"
              material="shader:flat;side:double;transparent:true;src:#duckAcrossLeft1"
              position="0 0 -12">
     </a-plane>
@@ -98,6 +116,10 @@
                 geometry="primitive:cylinder;height:8;radius:8;segmentsRadial:8;segmentsHeight:1;openEnded:true">
     </a-cylinder>
 
+    <a-plane width="2.5" height="2.76" id="dog"
+             material="depthTest:false;shader:flat;transparent:true;src:#dogWalk1"
+             position="-2 1.38 -7"
+    ></a-plane>
 
     <a-sky id="sky" material="color:rgb(72,161,241)"></a-sky>
 

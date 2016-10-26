@@ -105,8 +105,8 @@ function removeShotFiredEffect() {
 function onGyronorm(value) {
     var rotation       = value.rotation;
     var playerRotation = EL.player.getAttribute('rotation');
-    rotation.x += 90;
-    rotation.x -= playerRotation.x;
+    
+    rotation.x -= playerRotation.x - 90;
     rotation.y -= playerRotation.y;
     rotation.z -= playerRotation.z;
     EL.zapper.setAttribute('rotation', rotation);
@@ -478,7 +478,7 @@ var DEG_TO_RAD         = Math.PI / 180;
 var DOG_GOT_DUCKS_DIST = 9;
 
 function setDogGotDucksRotationPosition() {
-    var rotation  = EL.player.getAttribute('rotation');
+    var rotation = EL.player.getAttribute('rotation');
 
     EL.dogGotDucks.setAttribute('rotation', {
         x : 0,

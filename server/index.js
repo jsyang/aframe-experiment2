@@ -114,7 +114,6 @@ function onWDIOClientRequest(s, a) {
 
 function generateBufferDiff(oldBuffer, newBuffer) {
     var diffBuffer = Buffer.alloc(oldBuffer.length);
-
     for (var i = 0; i < oldBuffer.length; i++) {
         if (newBuffer[i] != oldBuffer[i]) {
             diffBuffer[i] = newBuffer[i];
@@ -151,11 +150,11 @@ function onRobotJSRequest(s, a) {
 
         if (s.hasSentInitialRequest) {
             //var newDecimatedBuffer = decimateBufferImagePixels(i.image, 2);
-            //var diff               = generateBufferDiff(s.initBuffer, newDecimatedBuffer);
-            var diff     = generateBufferDiff(s.initBuffer, i.image);
+            var diff = generateBufferDiff(s.initBuffer, i.image);
+            //var diff     = generateBufferDiff(s.initBuffer, i.image);
             //s.initBuffer           = newDecimatedBuffer;
-            s.initBuffer = i.image;
-            s.emit('robotJSScreenshotDiff', s.initBuffer);
+            //s.initBuffer = i.image;
+            s.emit('robotJSScreenshotDiff', diff);
         } else {
             //s.initBuffer            = decimateBufferImagePixels(i.image, 2);
             s.initBuffer            = i.image;

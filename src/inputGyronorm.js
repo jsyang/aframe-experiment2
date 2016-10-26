@@ -2,7 +2,7 @@ var inputTap = require('./inputTap');
 
 var network;
 
-var GYRONORM_CONFIG = { frequency : 25, decimalCount : 0 };
+var GYRONORM_CONFIG = { frequency : 5, decimalCount : 0 };
 var gn;
 
 function onGyroNormData(data) {

@@ -67,6 +67,9 @@ Polished version of devices connecting to others via WebRTC + WebSockets. Differ
 
 - [Cannon.js 3D non-ported physics](http://schteppe.github.io/cannon.js/)
 
+- Gyronorm values don't implement [sensor fusion](https://github.com/googlevr/webvr-polyfill/tree/master/src/sensor-fusion)... will need to use that to get better orientation values
+- Needs to sync with consumer to recalibrate the sensor when the scene is done loading.
+
 ## Existing VR Guidelines
 
 - [Google Cardboard VR design specs](https://developers.google.com/vr/android/)

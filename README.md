@@ -1,10 +1,35 @@
-# aframe-experiment
+# Jim's AFrame experiments
 
 ## Getting started
+
+In one terminal window:
 
 ```
 npm i ; grunt
 ```
+
+In another:
+
+```
+node server/index.js
+```
+
+### Duck Hunt
+
+![duckhunt gif](http://i.imgur.com/9eq8jqe.gif)
+[See it on YouTube](https://www.youtube.com/watch?v=qLRu9_qdUpo)
+
+1. On your *viewer device*, go to http://localhost:3000/duckhunt.html
+2. On your *controller device*, go to http://localhost:3000/controller.html
+3. Select the `gyronorm` controller mode
+4. Select the `socketio` network mode
+
+5. You need to align both the *viewer* and the *controller* in the same orientation,
+if they get out of sync, you will need to long-press on the *controller* to reset it.
+
+On your *viewer*, you need to face north as you re-sync.
+
+---
 
 ## Learnings
 

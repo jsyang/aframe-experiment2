@@ -1,5 +1,12 @@
 # Jim's AFrame experiments
 
+---
+
+## Experimentation Summary
+
+[Bringing Light to WebVR with AFrame](https://medium.com/this-place/bringing-light-to-webvr-with-aframe-bf98ba2f49db)
+
+
 ## Getting started
 
 In one terminal window:
@@ -17,6 +24,7 @@ node server/index.js
 ### Duck Hunt
 
 ![duckhunt gif](http://i.imgur.com/9eq8jqe.gif)
+
 [See it on YouTube](https://www.youtube.com/watch?v=qLRu9_qdUpo)
 
 1. On your *viewer device*, go to http://localhost:3000/duckhunt.html
@@ -94,6 +102,8 @@ Polished version of devices connecting to others via WebRTC + WebSockets. Differ
 
 - Gyronorm values don't implement [sensor fusion](https://github.com/googlevr/webvr-polyfill/tree/master/src/sensor-fusion)... will need to use that to get better orientation values
 - Needs to sync with consumer to recalibrate the sensor when the scene is done loading.
+
+---
 
 ## Existing VR Guidelines
 

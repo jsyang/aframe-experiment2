@@ -295,17 +295,18 @@ var audio   = require('./audio');
 var network = require('./network');
 
 var EL = {
-    scene      : null,
-    bg2        : null,
-    duck1      : null,
-    zapper     : null,
-    hitArea    : null,
-    hitBox     : null,
-    sightField : null,
-    sightLine  : null,
-    player     : null,
-    sky        : null,
-    dog        : null
+    scene       : null,
+    bg2         : null,
+    duck1       : null,
+    zapper      : null,
+    hitArea     : null,
+    hitBox      : null,
+    sightField  : null,
+    sightLine   : null,
+    player      : null,
+    sky         : null,
+    dog         : null,
+    dogGotDucks : null
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -318,7 +319,7 @@ var DOG_WALK_SPEED       = 0.0125;
 var DOG_INITIAL_POSITION = {
     x : -2,
     y : 1.38,
-    z : -7
+    z : -6
 };
 
 var DUCK_SPEED_SLOW       = 0.1;
@@ -359,7 +360,12 @@ var STATE = {
     dogMaxFramesInCurrentState : 8,
     dogLastFrameTime           : 0,
 
-    dogPosition : DOG_INITIAL_POSITION
+    dogPosition : DOG_INITIAL_POSITION,
+
+    // Dog got ducks
+    dogGotDucksActive   : false,
+    dogGotDucksShown    : false,
+    dogGotDucksPosition : { x : 0, y : 0, z : 0 }
 };
 
 function getRandomInt(min, max) {
@@ -400,18 +406,18 @@ function onGyronorm(value) {
 }
 
 function onTap() {
-    if (STATE.shotsRemaining > 0) {
-        audio.playSoundFile('shot');
-        applyShotFiredEffect();
+    //if (STATE.shotsRemaining > 0) {
+    audio.playSoundFile('shot');
+    applyShotFiredEffect();
 
-        if (intersectedDuck === EL.duck1) {
-            setDuck1StateToShot();
-        }
-
-        STATE.shotsRemaining--;
-    } else {
-        STATE.shotsRemaining = SHOT_CAPACITY;
+    if (intersectedDuck === EL.duck1) {
+        setDuck1StateToShot();
     }
+
+    //    STATE.shotsRemaining--;
+    //} else {
+    STATE.shotsRemaining = SHOT_CAPACITY;
+    //}
 
     setTimeout(removeShotFiredEffect, 40);
 }
@@ -492,6 +498,7 @@ function setDuck1StateToDown() {
 }
 
 function setDuck1StateToShot() {
+    setDogGotDucksRotationPosition();
     STATE.duck1State = 'Shot';
 }
 
@@ -539,9 +546,8 @@ function animateDuck1() {
             }
         } else {
             setDuck1StateToNotAlive();
-            //audio.playSoundFile('drop');
-            randomSpawn();
-            audio.playSoundFile('end');
+            audio.playSoundFile('drop');
+            setTimeout(setDogGotDucksActive, 400);
         }
 
     } else {
@@ -558,7 +564,7 @@ function animateDuck1() {
             }
             STATE.duck1LastFrameTime = now;
 
-            if (STATE.duck1Position.y > 2 && Math.random() < STATE.duck1DirectionChangeChance) {
+            if (STATE.duck1Position.y > 4 && Math.random() < STATE.duck1DirectionChangeChance) {
                 setDuck1RandomDirection();
             }
             audio.playSoundFile('flapping');
@@ -615,7 +621,7 @@ function spawnDuck1() {
 }
 
 function randomSpawn() {
-    setTimeout(spawnDuck1, getRandomInt(1200, 3000));
+    setTimeout(spawnDuck1, 1000);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -732,14 +738,14 @@ function animateDog() {
 
         if (state === 'Jump1') {
             if (STATE.dogPosition.y < 3.5) {
-                moveDog({ dx : 0.02, dy : 0.12, dz : -0.08 });
+                moveDog({ dx : 0.02, dy : 0.12, dz : -0.12 });
             } else {
                 setDogStateToJumpFall();
                 bg2TextureBlendHack();
             }
         } else if (state === 'Jump2') {
             if (STATE.dogPosition.y > 1.38) {
-                moveDog({ dx : 0.01, dy : -0.1 });
+                moveDog({ dx : 0.01, dy : -0.15 });
             } else {
                 // Trigger round start
                 randomSpawn();
@@ -754,6 +760,92 @@ function tickDog() {
         if (STATE.dogFramesInCurrentState <= STATE.dogMaxFramesInCurrentState) {
             animateDog();
         }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+// Dog got ducks
+
+var DEG_TO_RAD         = Math.PI / 180;
+var DOG_GOT_DUCKS_DIST = 9;
+
+function setDogGotDucksRotationPosition() {
+    var rotation  = EL.player.getAttribute('rotation');
+
+    EL.dogGotDucks.setAttribute('rotation', {
+        x : 0,
+        y : rotation.y,
+        z : 0
+    });
+
+    var position = { x : 0, y : 0, z : 0 };
+
+    // todo: something's weird with this calculation
+    var angleDuckRelativeToPlayer = (EL.zapper.getAttribute('rotation').y + rotation.y) * DEG_TO_RAD;
+
+    position.x = -Math.sin(angleDuckRelativeToPlayer) * DOG_GOT_DUCKS_DIST;
+    position.z = -Math.cos(angleDuckRelativeToPlayer) * DOG_GOT_DUCKS_DIST;
+
+    EL.dogGotDucks.setAttribute('position', position);
+
+    STATE.dogGotDucksShown    = false;
+    STATE.dogGotDucksPosition = position;
+
+}
+
+function setDogGotDucksInActive() {
+    STATE.dogGotDucksActive = false;
+}
+
+function setDogGotDucksActive() {
+    STATE.dogGotDucksActive = true;
+    audio.playSoundFile('end');
+}
+
+function moveDogGotDucks(options) {
+    if (options.dy) {
+        STATE.dogGotDucksPosition.y += options.dy;
+    }
+
+    EL.dogGotDucks.setAttribute('position', STATE.dogGotDucksPosition);
+}
+
+function setDogGotDucksShown() {
+    STATE.dogGotDucksShown = true;
+}
+
+var DOG_GOT_DUCKS_SPEED = 0.08;
+
+function tickDogGotDucks() {
+    if (STATE.dogGotDucksActive) {
+        var now   = new Date();
+        var dTime = now - STATE.dogLastFrameTime;
+
+        if (dTime > 10) {
+            if (STATE.dogGotDucksShown) {
+                // Moving back down
+
+                if (STATE.dogGotDucksPosition.y > 0) {
+                    moveDogGotDucks({ dy : -DOG_GOT_DUCKS_SPEED });
+                } else {
+                    setDogGotDucksInActive();
+                    randomSpawn();
+                }
+
+            } else {
+                // Rising up to show ducks
+                if (STATE.dogGotDucksPosition.y < 2.5) {
+                    moveDogGotDucks({ dy : DOG_GOT_DUCKS_SPEED });
+                } else if (!STATE.dogGotDucksShown) {
+                    setTimeout(setDogGotDucksShown, 600);
+                }
+
+            }
+
+            STATE.dogLastFrameTime = now;
+        }
+
     }
 }
 
@@ -779,6 +871,7 @@ function onSightFieldIntersected(e) {
 function tick() {
     tickDuck1();
     tickDog();
+    tickDogGotDucks();
     STATE.rAF = requestAnimationFrame(tick);
 
 }
@@ -822,13 +915,9 @@ function onDOMContentLoaded() {
         }
     });
 
-    //randomSpawn();
     audio.playSoundFile('duckHuntIntro');
-    resetDog();
     setDogStateToWalk();
     tick();
-
-    window.EL = EL;
 }
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);

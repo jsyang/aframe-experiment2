@@ -58,6 +58,8 @@
         <img id="dogWalk3" src="assets/duckhunt/dogWalk3.png">
         <img id="dogWalk4" src="assets/duckhunt/dogWalk4.png">
 
+        <img id="dogOneDuck" src="assets/duckhunt/dogOneDuck.png">
+
 
     </a-assets>
 
@@ -108,6 +110,11 @@
 
     </a-camera>
 
+    <a-plane id="dogGotDucks" width="2.72" height="2.78"
+             material="shader:flat;side:double;transparent:true;src:#dogOneDuck"
+             position="0 0 -12">
+    </a-plane>
+
 
     <a-cylinder id="bg2" width="16" height="8"
                 material-overdraw="overdraw:0.8"
@@ -117,7 +124,7 @@
     </a-cylinder>
 
     <a-plane width="2.5" height="2.76" id="dog"
-             material="depthTest:false;shader:flat;transparent:true;src:#dogWalk1"
+             material="depthTest:true;shader:flat;transparent:true;src:#dogWalk1"
              position="-2 1.38 -7"
     ></a-plane>
 

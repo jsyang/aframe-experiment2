@@ -124,19 +124,43 @@ function onWDIOClientResponse(res) {
 var ctx2d;
 var canvasMaterialComponent;
 
-var SCREEN_WIDTH  = 1280 * 2;
-var SCREEN_HEIGHT = 800 * 2;
+var hasScreenBeenSized = false;
 
-function onRobotJSScreenshot(buffer) {
-    console.log('buf recvd');
-    if (ctx2d) {
-        var imageData = new ImageData(new Uint8ClampedArray(buffer), SCREEN_WIDTH, SCREEN_HEIGHT);
-        ctx2d.putImageData(imageData, 0, 0);
-        canvasMaterialComponent.updateTexture();
-    } else {
+function onRobotJSScreenshotDiff(diffBuffer) {
+    var imageData = new ImageData(
+        new Uint8ClampedArray(diffBuffer),
+        screenshotWidth,
+        screenshotHeight
+    );
+    ctx2d.putImageData(imageData, 0, 0);
+    canvasMaterialComponent.updateTexture();
+}
+
+var screenshotWidth;
+var screenshotHeight;
+
+function onRobotJSScreenshotInit(initBuffer, width, height) {
+    if (!hasScreenBeenSized) {
+        EL.wdioClientScreen1.setAttribute('geometry', 'width', width * 0.0075);
+        EL.wdioClientScreen1.setAttribute('geometry', 'height', height * 0.0075);
+        hasScreenBeenSized = true;
+    }
+
+    if (!ctx2d) {
         canvasMaterialComponent = EL.wdioClientScreen1.components["canvas-material"];
         ctx2d                   = canvasMaterialComponent.getContext();
     }
+
+    screenshotWidth  = width;
+    screenshotHeight = height;
+
+    var imageData = new ImageData(
+        new Uint8ClampedArray(initBuffer),
+        width,
+        height
+    );
+    ctx2d.putImageData(imageData, 0, 0);
+    canvasMaterialComponent.updateTexture();
 
 }
 
@@ -158,7 +182,8 @@ function initNetwork() {
             useSocketIO : true,
             url         : location.protocol + '//' + location.hostname + ':3001'
         })
-        .on('robotJSScreenshot', onRobotJSScreenshot)
+        .on('robotJSScreenshotInit', onRobotJSScreenshotInit)
+        .on('robotJSScreenshotDiff', onRobotJSScreenshotDiff)
         .on('wdioClientResponse', onWDIOClientResponse);
 
     networkCommandQueue = [
@@ -169,7 +194,7 @@ function initNetwork() {
         { clientId : 'abc', requestType : 'end' }
     ];
 
-    executeNextWDIOCommand();
+    //executeNextWDIOCommand();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -181,7 +206,7 @@ function onDOMContentLoaded() {
     Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
 
     initNetwork();
-    //setInterval(sendScreenshotRequest, 600);
+    setInterval(sendScreenshotRequest, 1000);
 }
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);

@@ -49,6 +49,10 @@ function onNetworkAddressRequest(s, a) {
     s.emit('networkAddressResponse', ipv4);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+// WebdriverIO
+
 var WDIO_REMOTE_CLIENT_SETTINGS = {
     desiredCapabilities : { browserName : 'chrome' },
     singleton           : true
@@ -104,10 +108,62 @@ function onWDIOClientRequest(s, a) {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+// RobotJS
+
+function generateBufferDiff(oldBuffer, newBuffer) {
+    var diffBuffer = Buffer.alloc(oldBuffer.length);
+
+    for (var i = 0; i < oldBuffer.length; i++) {
+        if (newBuffer[i] != oldBuffer[i]) {
+            diffBuffer[i] = newBuffer[i];
+        }
+    }
+
+    return diffBuffer;
+}
+
+function decimateBufferImagePixels(buffer, factor) {
+    var maxI            = buffer.length / factor / factor;
+    var decimatedBuffer = Buffer.alloc(maxI);
+    for (var i = 0; i < maxI; i++) {
+        var j = i * factor;
+
+        decimatedBuffer[i]     = buffer[j];
+        decimatedBuffer[i + 1] = buffer[j + 1];
+        decimatedBuffer[i + 2] = buffer[j + 2];
+        decimatedBuffer[i + 3] = buffer[j + 3];
+    }
+    return decimatedBuffer;
+}
+
+// This is as good as it's going to get without compression. Ideally, we'd use UDP
+// but since we can't do that here, this is the next best thing :(
+
 function onRobotJSRequest(s, a) {
     if (a.requestType === 'screenshot') {
+        console.log('RobotJS screenshot requested', new Date());
+
+        s.sendBuffer = [];
+
         var i = robot.screen.capture();
-        s.emit('robotJSScreenshot', i.image);
+
+        if (s.hasSentInitialRequest) {
+            //var newDecimatedBuffer = decimateBufferImagePixels(i.image, 2);
+            //var diff               = generateBufferDiff(s.initBuffer, newDecimatedBuffer);
+            var diff     = generateBufferDiff(s.initBuffer, i.image);
+            //s.initBuffer           = newDecimatedBuffer;
+            s.initBuffer = i.image;
+            s.emit('robotJSScreenshotDiff', s.initBuffer);
+        } else {
+            //s.initBuffer            = decimateBufferImagePixels(i.image, 2);
+            s.initBuffer            = i.image;
+            s.hasSentInitialRequest = true;
+            //s.emit('robotJSScreenshotInit', s.initBuffer, i.width / 2, i.height / 2);
+            s.emit('robotJSScreenshotInit', s.initBuffer, i.width, i.height);
+        }
+
     }
 }
 

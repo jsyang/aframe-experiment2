@@ -164,3 +164,12 @@ npm install webdriverio --save-dev
 - [Webdriver usage example](https://github.com/webdriverio/webdriverio/blob/master/examples/standalone/webdriverio.with.nodeunit.js)
 - [Capture entire web document](https://github.com/brenden/node-webshot)
 - [RobotJS desktop automation](http://robotjs.io/docs/)
+
+---
+
+# Contact & License
+
+- [Twitter](https://twitter.com/spacefishing)
+- [Medium](https://medium.com/@spacefishing)
+
+All code here is GPLv2 licensed. Copyright 2016 Jim Yang (jim.yang@thisplace.com)

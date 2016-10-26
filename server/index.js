@@ -137,6 +137,18 @@ function decimateBufferImagePixels(buffer, factor) {
     return decimatedBuffer;
 }
 
+// Need this hack because RobotJS buffer R and B values are flipped (?!)
+function flipBufferRedBlue(buffer) {
+    var flippedBuffer = Buffer.alloc(buffer.length);
+    for (var i = 0; i < buffer.length; i += 4) {
+        flippedBuffer[i]     = buffer[i + 2];
+        flippedBuffer[i + 1] = buffer[i + 1];
+        flippedBuffer[i + 2] = buffer[i];
+        flippedBuffer[i + 3] = 255;
+    }
+    return flippedBuffer;
+}
+
 // This is as good as it's going to get without compression. Ideally, we'd use UDP
 // but since we can't do that here, this is the next best thing :(
 
@@ -149,18 +161,10 @@ function onRobotJSRequest(s, a) {
         var i = robot.screen.capture();
 
         if (s.hasSentInitialRequest) {
-            //var newDecimatedBuffer = decimateBufferImagePixels(i.image, 2);
-            var diff = generateBufferDiff(s.initBuffer, i.image);
-            //var diff     = generateBufferDiff(s.initBuffer, i.image);
-            //s.initBuffer           = newDecimatedBuffer;
-            //s.initBuffer = i.image;
-            s.emit('robotJSScreenshotDiff', diff);
+            s.emit('robotJSScreenshotDiff', flipBufferRedBlue(i.image));
         } else {
-            //s.initBuffer            = decimateBufferImagePixels(i.image, 2);
-            s.initBuffer            = i.image;
             s.hasSentInitialRequest = true;
-            //s.emit('robotJSScreenshotInit', s.initBuffer, i.width / 2, i.height / 2);
-            s.emit('robotJSScreenshotInit', s.initBuffer, i.width, i.height);
+            s.emit('robotJSScreenshotInit', flipBufferRedBlue(i.image), i.width, i.height);
         }
 
     }

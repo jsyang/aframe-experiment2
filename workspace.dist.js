@@ -81,7 +81,8 @@ module.exports = {
 var network = require('./network');
 
 var EL = {
-    wdioClientScreen1 : null
+    wdioClientScreen1 : null,
+    wdioClientScreen2 : null
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -89,12 +90,10 @@ var EL = {
 // Canvas material boilerplate
 
 function drawImage(i) {
-    if (!ctx2d) {
-        canvasMaterialComponent = EL.wdioClientScreen1.components["canvas-material"];
-        ctx2d                   = canvasMaterialComponent.getContext();
-    }
+    var canvasMaterialComponent = EL.wdioClientScreen2.components["canvas-material"];
+    var c                       = canvasMaterialComponent.getContext();
 
-    ctx2d.drawImage(i, 0, 0, 800, 600);
+    c.drawImage(i, 0, 0, 800, 600);
     canvasMaterialComponent.updateTexture();
 }
 
@@ -127,13 +126,21 @@ var canvasMaterialComponent;
 var hasScreenBeenSized = false;
 
 function onRobotJSScreenshotDiff(diffBuffer) {
+    var startTime = new Date();
     var imageData = new ImageData(
         new Uint8ClampedArray(diffBuffer),
         screenshotWidth,
         screenshotHeight
     );
-    ctx2d.putImageData(imageData, 0, 0);
+    createImageBitmap(imageData)
+        .then(setTextureFromImageBitmap.bind(null, startTime));
+}
+
+function setTextureFromImageBitmap(startTime, imageBitmap) {
+    ctx2d.drawImage(imageBitmap, 0, 0);
     canvasMaterialComponent.updateTexture();
+
+    document.title = (new Date()) - startTime;
 }
 
 var screenshotWidth;
@@ -164,6 +171,10 @@ function onRobotJSScreenshotInit(initBuffer, width, height) {
 
 }
 
+function onTap() {
+    sendScreenshotRequest();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 // Network
@@ -184,7 +195,8 @@ function initNetwork() {
         })
         .on('robotJSScreenshotInit', onRobotJSScreenshotInit)
         .on('robotJSScreenshotDiff', onRobotJSScreenshotDiff)
-        .on('wdioClientResponse', onWDIOClientResponse);
+        .on('wdioClientResponse', onWDIOClientResponse)
+        .on('tap', onTap);
 
     networkCommandQueue = [
         { clientId : 'abc', requestType : 'init' },
@@ -194,7 +206,7 @@ function initNetwork() {
         { clientId : 'abc', requestType : 'end' }
     ];
 
-    //executeNextWDIOCommand();
+    executeNextWDIOCommand();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -206,7 +218,7 @@ function onDOMContentLoaded() {
     Object.keys(EL).forEach(function (k) { EL[k] = document.getElementById(k);});
 
     initNetwork();
-    setInterval(sendScreenshotRequest, 1000);
+    sendScreenshotRequest();
 }
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);

@@ -5,11 +5,7 @@
 
     <!-- JS -->
     <script src="lib/aframe.0.3.0.min.js"></script>
-    <script src="lib/aframe-material-overdraw-component.js"></script>
-    <script src="lib/aframe-bmfont-text-component.min.js"></script>
-
     <script src="lib/socket.io.1.2.0.js"></script>
-
     <script src="scene-editor.dist.js"></script>
 
 </head>
@@ -25,7 +21,9 @@
 
     <a-entity
             id="text"
-            bmfont-text="text: Start typing on the keyboard to replace this text.; color: rgb(255,255,255); mode: pre"
+
+            geometry="primitive: plane; width: 3; height: 3"
+            draw="background: #000000" textwrap="color: #ffffff; text: Type to start; font: 10px monospace; lineHeight: 12"
             position="-2.5 2 -5"
     ></a-entity>
 

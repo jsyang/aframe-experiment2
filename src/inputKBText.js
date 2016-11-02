@@ -4,16 +4,12 @@ var network;
 var kbCapture;
 
 function onKBCaptureKeyDown(e) {
-    var string = this.value.trim();
+    var string = this.value;
 
     if (string) {
-        network.emit('kb', {
-            string : this.value
-        });
+        network.emit('kb', { string : string });
     } else {
-        network.emit('kb', {
-            humanString : eventToString(e)
-        });
+        network.emit('kb', { humanString : eventToString(e) });
     }
 
     this.value = '';
@@ -35,7 +31,7 @@ function init(networkInstance) {
     );
 
     kbCapture = document.getElementById('_kbcapture');
-    kbCapture.addEventListener('keypress', onKBCaptureKeyDown);
+    kbCapture.addEventListener('keyup', onKBCaptureKeyDown);
     kbCapture.focus();
 }
 

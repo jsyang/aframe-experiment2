@@ -1,4 +1,173 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+module.exports.component = {
+	schema: {
+		width: {
+			default: 256
+		},
+		height: {
+			default: 256
+		},
+		background: {
+			default: "#FFFFFF"
+		}
+	},
+
+	init: function () {
+		this.registers = []; //order of eventing after render
+		this.update();
+	},
+
+	register: function(render) {
+		this.registers.push(render);
+	},
+
+	update: function (oldData) {
+		if (!oldData) this.createCanvas(this.data.width, this.data.height);
+	},
+
+	createCanvas: function (w, h) {
+		var _ = this;
+		var canvas = document.createElement("canvas");
+		canvas.width = w;
+		canvas.height = h;
+		canvas.style = "display: none";
+		_.canvas = canvas;
+		_.ctx = canvas.getContext("2d");
+
+		this.texture = new THREE.Texture(_.canvas); //renders straight from a canvas
+		if(this.el.object3D.children.length > 0) { //backwards compatibility
+			this.el.object3D.children[0].material = new THREE.MeshBasicMaterial();
+			this.el.object3D.children[0].material.map = this.texture;
+		}
+		else { //backwards compatibility
+			this.el.object3D.material = new THREE.MeshBasicMaterial();
+			this.el.object3D.material.map = this.texture;
+		}
+		if(!this.el.hasLoaded) this.el.addEventListener("loaded", function() {
+			_.render();
+		});
+		else _.render();
+	},
+
+	render: function() {
+		if(this.registers.length > 0) { //backwards compatibility
+			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+			this.ctx.fillStyle = this.data.background;
+			this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+			this.registers.forEach(function(item) {
+				item();
+			});
+		}
+		this.texture.needsUpdate = true;
+	},
+
+	//not the most removable component out there, so will leave blank for now
+	remove: function () {}
+};
+
+},{}],2:[function(require,module,exports){
+module.exports.component = {
+	dependencies: ["draw"],
+	schema: {
+		text: {
+			default: "Sample Text"
+		},
+		x: {
+			default: 5
+		},
+		y: {
+			default: 20
+		},
+		font: {
+			default: "20px sans-serif"
+		},
+		color: {
+			default: "#000000"
+		},
+		textAlign: {
+			default: "start"
+		},
+		textBaseline: {
+			default: "alphabetic"
+		},
+		direction: {
+			default: "inherit"
+		},
+		width: {
+			default: 256
+		},
+		lineHeight: {
+			default: 20
+		}
+	},
+
+	/**
+	 * Called once when component is attached. Generally for initial setup.
+	 */
+	init: function () {
+		this.draw = this.el.components.draw;
+		this.draw.register(this.render.bind(this));
+	},
+
+	/**
+	 * Called when component is attached and when component data changes.
+	 * Generally modifies the entity based on the data.
+	 */
+	update: function () {
+		this.filterEscapeUrl(); //for escaping colons, semicolons, etc
+		this.draw.render();
+	},
+
+	filterEscapeUrl: function () {
+		var match = this.data.text.match(/^url\((.*)\)$/);
+		if (match) this.data.text = match[1];
+	},
+
+	render: function () {
+		var ctx = this.draw.ctx;
+		var canvas = this.draw.canvas;
+
+		if (this.data.bg) {
+			ctx.fillStyle = this.data.bg;
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+		}
+
+		ctx.fillStyle = this.data.color;
+		ctx.font = this.data.font;
+		ctx.textAlign = this.data.textAlign;
+		ctx.textBaseline = this.data.textBaseline;
+		ctx.direction = this.data.direction;
+		wrapText(ctx, this.data.text, this.data.x, this.data.y, this.data.width, this.data.lineHeight);
+
+		//stolen from http://www.html5canvastutorials.com/tutorials/html5-canvas-wrap-text-tutorial/
+		function wrapText(context, text, x, y, maxWidth, lineHeight) {
+			var words = text.split(" ");
+			var line = "";
+
+			for (var n = 0; n < words.length; n++) {
+				var testLine = line + words[n] + " ";
+				var metrics = context.measureText(testLine);
+				var testWidth = metrics.width;
+				if (testWidth > maxWidth && n > 0) {
+					context.fillText(line, x, y);
+					line = words[n] + " ";
+					y += lineHeight;
+				} else {
+					line = testLine;
+				}
+			}
+			context.fillText(line, x, y);
+		}
+	},
+
+	/**
+	 * Called when a component is removed (e.g., via removeAttribute).
+	 * Generally undoes all modifications to the entity.
+	 */
+	remove: function () {}
+};
+
+},{}],3:[function(require,module,exports){
 (function() {
   var Connector, PROTOCOL_6, PROTOCOL_7, Parser, Version, _ref;
 
@@ -171,7 +340,7 @@
 
 }).call(this);
 
-},{"./protocol":6}],2:[function(require,module,exports){
+},{"./protocol":8}],4:[function(require,module,exports){
 (function() {
   var CustomEvents;
 
@@ -212,7 +381,7 @@
 
 }).call(this);
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function() {
   var LessPlugin;
 
@@ -276,7 +445,7 @@
 
 }).call(this);
 
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function() {
   var Connector, LiveReload, Options, Reloader, Timer,
     __hasProp = {}.hasOwnProperty;
@@ -482,7 +651,7 @@
 
 }).call(this);
 
-},{"./connector":1,"./options":5,"./reloader":7,"./timer":9}],5:[function(require,module,exports){
+},{"./connector":3,"./options":7,"./reloader":9,"./timer":11}],7:[function(require,module,exports){
 (function() {
   var Options;
 
@@ -544,7 +713,7 @@
 
 }).call(this);
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function() {
   var PROTOCOL_6, PROTOCOL_7, Parser, ProtocolError,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -641,7 +810,7 @@
 
 }).call(this);
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function() {
   var IMAGE_STYLES, Reloader, numberOfMatchingSegments, pathFromUrl, pathsMatch, pickBestMatch, splitUrl;
 
@@ -1102,7 +1271,7 @@
 
 }).call(this);
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function() {
   var CustomEvents, LiveReload, k;
 
@@ -1136,7 +1305,7 @@
 
 }).call(this);
 
-},{"./customevents":2,"./less":3,"./livereload":4}],9:[function(require,module,exports){
+},{"./customevents":4,"./less":5,"./livereload":6}],11:[function(require,module,exports){
 (function() {
   var Timer;
 
@@ -1180,7 +1349,7 @@
 
 }).call(this);
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var useSocketIO = false;
 var useFirebase = false;
 
@@ -1259,7 +1428,21 @@ module.exports = {
     emit : emit,
     on   : on
 };
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
+// idea for this is to be like the symbolics lisp machine?
+// everything inside this environment is editable?
+// run arbitrary code?
+
+// should probably use canvas to draw a texture instead of bmfont
+// it might be much much faster
+// https://www.npmjs.com/package/aframe-textwrap-component
+
+// use https://github.com/curiousdannii/ifvms.js to get infocom game text
+// parse returned text? or read zmachine memory values?
+
+AFRAME.registerComponent("draw", require("aframe-draw-component").component);
+AFRAME.registerComponent("textwrap", require("aframe-textwrap-component").component);
+
 window.LiveReloadOptions = { host : location.hostname };
 require('livereload-js');
 
@@ -1277,11 +1460,13 @@ var EL = {
 var STATE = {
     isInVR : false,
     rAF    : null,
-    text   : ''
+    text   : '',
+    cmd    : ''
 };
 
 function updateText() {
-    EL.text.setAttribute('bmfont-text', 'text', STATE.text);
+    //EL.text.setAttribute('bmfont-text', 'text', STATE.text + STATE.cmd + '_');
+    EL.text.setAttribute('textwrap', 'text', STATE.text + STATE.cmd + '_');
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -1289,16 +1474,22 @@ function updateText() {
 // User events
 
 function onKB(e) {
-    if (e.string) {
-        STATE.text += e.string;
+    if (typeof e.string !== 'undefined') {
+        STATE.cmd += e.string;
+        updateText();
     } else if (e.humanString === 'Backspace') {
-        STATE.text = STATE.text.substr(0, STATE.text.length - 1);
-    } else if (e.humanString === 'Space') {
-        STATE.text += ' ';
+        STATE.cmd = STATE.cmd.substr(0, STATE.cmd.length - 1);
+        updateText();
     } else if (e.humanString === 'Enter') {
-        STATE.text += '\n';
+        STATE.text += [
+            STATE.cmd,
+            '>> ' + eval(STATE.cmd),
+            ''
+        ].join('\n');
+        STATE.cmd = '';
+        updateText();
+
     }
-    updateText();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -1361,4 +1552,4 @@ function onDOMContentLoaded() {
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
 
-},{"./network":10,"livereload-js":8}]},{},[11]);
+},{"./network":12,"aframe-draw-component":1,"aframe-textwrap-component":2,"livereload-js":10}]},{},[13]);

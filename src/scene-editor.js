@@ -1,3 +1,17 @@
+// idea for this is to be like the symbolics lisp machine?
+// everything inside this environment is editable?
+// run arbitrary code?
+
+// should probably use canvas to draw a texture instead of bmfont
+// it might be much much faster
+// https://www.npmjs.com/package/aframe-textwrap-component
+
+// use https://github.com/curiousdannii/ifvms.js to get infocom game text
+// parse returned text? or read zmachine memory values?
+
+AFRAME.registerComponent("draw", require("aframe-draw-component").component);
+AFRAME.registerComponent("textwrap", require("aframe-textwrap-component").component);
+
 window.LiveReloadOptions = { host : location.hostname };
 require('livereload-js');
 
@@ -15,11 +29,13 @@ var EL = {
 var STATE = {
     isInVR : false,
     rAF    : null,
-    text   : ''
+    text   : '',
+    cmd    : ''
 };
 
 function updateText() {
-    EL.text.setAttribute('bmfont-text', 'text', STATE.text);
+    //EL.text.setAttribute('bmfont-text', 'text', STATE.text + STATE.cmd + '_');
+    EL.text.setAttribute('textwrap', 'text', STATE.text + STATE.cmd + '_');
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -27,16 +43,22 @@ function updateText() {
 // User events
 
 function onKB(e) {
-    if (e.string) {
-        STATE.text += e.string;
+    if (typeof e.string !== 'undefined') {
+        STATE.cmd += e.string;
+        updateText();
     } else if (e.humanString === 'Backspace') {
-        STATE.text = STATE.text.substr(0, STATE.text.length - 1);
-    } else if (e.humanString === 'Space') {
-        STATE.text += ' ';
+        STATE.cmd = STATE.cmd.substr(0, STATE.cmd.length - 1);
+        updateText();
     } else if (e.humanString === 'Enter') {
-        STATE.text += '\n';
+        STATE.text += [
+            STATE.cmd,
+            '>> ' + eval(STATE.cmd),
+            ''
+        ].join('\n');
+        STATE.cmd = '';
+        updateText();
+
     }
-    updateText();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

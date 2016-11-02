@@ -5,6 +5,9 @@
     "type": "git",
     "url": "https://github.com/jim-thisplace/aframe-test-desk.git"
   },
+  "scripts": {
+    "start": "node server/index.js"
+  },
   "devDependencies": {
     "audio-loader": "^0.6.0",
     "desktop-screenshot": "^0.1.1",
@@ -14,6 +17,8 @@
     "grunt-contrib-connect": "^1.0.2",
     "grunt-contrib-uglify": "^2.0.0",
     "grunt-contrib-watch": "~0.6.0",
+    "key-event-to-string": "^1.1.1",
+    "livereload-js": "^2.2.2",
     "load-grunt-config": "^0.19.2",
     "load-grunt-tasks": "^3.5.0",
     "lwip": "0.0.9",

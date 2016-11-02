@@ -1,0 +1,39 @@
+<html>
+<head>
+    <!-- iOS home-screen app settings -->
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- JS -->
+    <script src="lib/aframe.0.3.0.min.js"></script>
+    <script src="lib/aframe-material-overdraw-component.js"></script>
+    <script src="lib/aframe-bmfont-text-component.min.js"></script>
+
+    <script src="lib/socket.io.1.2.0.js"></script>
+
+    <script src="scene-editor.dist.js"></script>
+
+</head>
+<body style="background: rgb(33,33,33)">
+
+<a-scene id="scene">
+    <!-- CAMERA -->
+    <a-camera wasd-controls="enabled:false" id="player">
+        <!--<a-plane width="8" height="8" position="0 0 -8"></a-plane>-->
+
+    </a-camera>
+
+
+    <a-entity
+            id="text"
+            bmfont-text="text: Start typing on the keyboard to replace this text.; color: rgb(255,255,255); mode: pre"
+            position="-2.5 2 -5"
+    ></a-entity>
+
+
+    <a-sky id="sky" material="color:rgb(22,22,22)"></a-sky>
+</a-scene>
+
+
+</body>
+
+</html>

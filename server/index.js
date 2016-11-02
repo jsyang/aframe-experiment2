@@ -19,6 +19,11 @@ function onKBMouse(s, a) {
     s.broadcast.emit('kbmouse', a);
 }
 
+function onKB(s, a) {
+    console.log(a);
+    s.broadcast.emit('kb', a);
+}
+
 function onXY(s, a) {
     s.broadcast.emit('xy', a);
 }
@@ -179,6 +184,7 @@ function onConnection(socket) {
         .on('gyronorm', onGyronorm.bind(null, socket))
         .on('tap', onTap.bind(null, socket))
         .on('kbmouse', onKBMouse.bind(null, socket))
+        .on('kb', onKB.bind(null, socket))
         .on('xy', onXY.bind(null, socket))
         .on('angular', onAngular.bind(null, socket))
 

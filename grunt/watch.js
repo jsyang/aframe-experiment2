@@ -1,7 +1,7 @@
 // Watches for changes to CSS or email templates then runs grunt tasks
 module.exports = {
     options : {
-        livereload : false
+        livereload : true
     },
     html    : {
         files : ['*.html']

@@ -4,8 +4,9 @@ var inputXY       = require('./inputXY');
 var inputGyronorm = require('./inputGyronorm');
 var inputAngular  = require('./inputAngular');
 var inputKBMouse  = require('./inputKBMouse');
+var inputKBText   = require('./inputKBText');
 
-var getHashId     = require('./getHashId');
+var getHashId = require('./getHashId');
 
 var isConnected = false;
 
@@ -43,7 +44,7 @@ function getDeviceId() {
 
 // Device mode
 
-var DEVICE_MODE        = 'xy|gyronorm|angular|kbmouse';
+var DEVICE_MODE        = 'xy|gyronorm|angular|kbmouse|kbtext';
 var REGEXP_DEVICE_MODE = new RegExp(DEVICE_MODE);
 
 function updateDeviceMode(mode) {
@@ -168,7 +169,8 @@ var mapDeviceModeToInputObject = {
     xy       : inputXY,
     gyronorm : inputGyronorm,
     angular  : inputAngular,
-    kbmouse  : inputKBMouse
+    kbmouse  : inputKBMouse,
+    kbtext   : inputKBText
 };
 
 function initInput() {

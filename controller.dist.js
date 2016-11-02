@@ -242,14 +242,106 @@ if (typeof window !== "undefined") {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],6:[function(require,module,exports){
+var defaultOptions = {
+  cmd: 'Cmd',
+  ctrl: 'Ctrl',
+  alt: 'Alt',
+  shift: 'Shift',
+  joinWith: ' + '
+}
+
+var options = {}
+
+var keyMap = {
+  8: 'Backspace',
+  9: 'Tab',
+  13: 'Enter',
+  27: 'Escape',
+  32: 'Space',
+  36: 'Home',
+  33: 'Page Up',
+  34: 'Page Down',
+  35: 'End',
+  37: 'Left',
+  38: 'Up',
+  39: 'Right',
+  40: 'Down',
+  46: 'Delete',
+  186: ';',
+  187: '=',
+  188: ',',
+  189: '-',
+  190: '.',
+  192: '`',
+  222: "'"
+}
+
+function buildKeyMap (e) {
+  var isOnlyModifier = [16, 17, 18, 91, 93, 224].indexOf(e.keyCode) !== -1
+  var character = isOnlyModifier ? null : keyMap[e.keyCode] || String.fromCharCode(e.keyCode)
+
+  return {
+    character: character,
+    modifiers: {
+      cmd: e.metaKey,
+      ctrl: e.ctrlKey,
+      alt: e.altKey,
+      shift: e.shiftKey
+    }
+  }
+}
+
+function buildKeyArray (e) {
+  var map = buildKeyMap(e)
+  var modifiers = map.modifiers
+
+  var result = []
+
+  if (modifiers.cmd) result.push(options.cmd)
+  if (modifiers.ctrl) result.push(options.ctrl)
+  if (modifiers.alt) result.push(options.alt)
+  if (modifiers.shift) result.push(options.shift)
+  if (map.character) result.push(map.character)
+
+  return result
+}
+
+function event2string (e) {
+  return buildKeyArray(e).join(options.joinWith)
+}
+
+function details (e) {
+  var map = buildKeyMap(e)
+  var mods = map.modifiers
+
+  var hasModifier = mods.cmd || mods.ctrl || mods.alt || mods.shift
+
+  var result = {
+    hasKey: map.character != null,
+    hasModifier: hasModifier,
+    map: map
+  }
+
+  return result
+}
+
+module.exports = function (userOptions) {
+  options = Object.assign(defaultOptions, userOptions)
+  return event2string
+}
+
+module.exports.details = details
+
+},{}],7:[function(require,module,exports){
 var network = require('./network');
 
 var inputXY       = require('./inputXY');
 var inputGyronorm = require('./inputGyronorm');
 var inputAngular  = require('./inputAngular');
 var inputKBMouse  = require('./inputKBMouse');
+var inputKBText   = require('./inputKBText');
 
-var getHashId     = require('./getHashId');
+var getHashId = require('./getHashId');
 
 var isConnected = false;
 
@@ -287,7 +379,7 @@ function getDeviceId() {
 
 // Device mode
 
-var DEVICE_MODE        = 'xy|gyronorm|angular|kbmouse';
+var DEVICE_MODE        = 'xy|gyronorm|angular|kbmouse|kbtext';
 var REGEXP_DEVICE_MODE = new RegExp(DEVICE_MODE);
 
 function updateDeviceMode(mode) {
@@ -412,7 +504,8 @@ var mapDeviceModeToInputObject = {
     xy       : inputXY,
     gyronorm : inputGyronorm,
     angular  : inputAngular,
-    kbmouse  : inputKBMouse
+    kbmouse  : inputKBMouse,
+    kbtext   : inputKBText
 };
 
 function initInput() {
@@ -482,7 +575,7 @@ document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
 
 // Stop touch bounce of web page
 window.ontouchmove = function (e) { e.preventDefault(); };
-},{"./getHashId":8,"./inputAngular":9,"./inputGyronorm":10,"./inputKBMouse":11,"./inputXY":13,"./network":14}],7:[function(require,module,exports){
+},{"./getHashId":9,"./inputAngular":10,"./inputGyronorm":11,"./inputKBMouse":12,"./inputKBText":13,"./inputXY":15,"./network":16}],8:[function(require,module,exports){
 var load = require('audio-loader');
 var oscillator;
 var audioContext;
@@ -549,7 +642,7 @@ module.exports = {
     loadSoundFiles : loadSoundFiles,
     playSoundFile  : playSoundFile
 };
-},{"audio-loader":3}],8:[function(require,module,exports){
+},{"audio-loader":3}],9:[function(require,module,exports){
 var ID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 
 /**
@@ -567,7 +660,7 @@ function getHashId(length) {
 }
 
 module.exports = getHashId;
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var controllerAudioFeedback = require('./controllerAudioFeedback');
 
 /**
@@ -760,7 +853,7 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{"./controllerAudioFeedback":7,"./throttle":15}],10:[function(require,module,exports){
+},{"./controllerAudioFeedback":8,"./throttle":17}],11:[function(require,module,exports){
 var inputTap = require('./inputTap');
 
 var network;
@@ -807,7 +900,7 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{"./inputTap":12}],11:[function(require,module,exports){
+},{"./inputTap":14}],12:[function(require,module,exports){
 var throttle = require('./throttle');
 
 var network;
@@ -901,7 +994,62 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{"./throttle":15}],12:[function(require,module,exports){
+},{"./throttle":17}],13:[function(require,module,exports){
+var eventToString = require('key-event-to-string')();
+var network;
+
+var kbCapture;
+
+function onKBCaptureKeyDown(e) {
+    var string = this.value.trim();
+
+    if (string) {
+        network.emit('kb', {
+            string : this.value
+        });
+    } else {
+        network.emit('kb', {
+            humanString : eventToString(e)
+        });
+    }
+
+    this.value = '';
+}
+
+function onWindowFocus() {
+    kbCapture.focus();
+}
+
+function init(networkInstance) {
+    network = networkInstance;
+
+    window.addEventListener('focus', onWindowFocus);
+    window.onfocus = onWindowFocus;
+
+    document.body.insertAdjacentHTML(
+        'afterbegin',
+        '<input type=text id=_kbcapture style="position: absolute; top: 0; left:0;width:100%;height:100%">'
+    );
+
+    kbCapture = document.getElementById('_kbcapture');
+    kbCapture.addEventListener('keypress', onKBCaptureKeyDown);
+    kbCapture.focus();
+}
+
+function remove() {
+    network = null;
+
+    window.removeEventListener('focus', onWindowFocus);
+
+    kbCapture.removeEventListener('keydown', onKBCaptureKeyDown);
+    kbCapture = null;
+}
+
+module.exports = {
+    init   : init,
+    remove : remove
+};
+},{"key-event-to-string":6}],14:[function(require,module,exports){
 var network;
 
 function emitTap() {
@@ -959,7 +1107,7 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{}],13:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var throttle = require('./throttle');
 
 var network;
@@ -1071,7 +1219,7 @@ module.exports = {
     init   : init,
     remove : remove
 };
-},{"./throttle":15}],14:[function(require,module,exports){
+},{"./throttle":17}],16:[function(require,module,exports){
 var useSocketIO = false;
 var useFirebase = false;
 
@@ -1150,7 +1298,7 @@ module.exports = {
     emit : emit,
     on   : on
 };
-},{}],15:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = function throttle(fn, threshhold, scope) {
     threshhold || (threshhold = 250);
     var last, deferTimer;
@@ -1172,4 +1320,4 @@ module.exports = function throttle(fn, threshhold, scope) {
         }
     };
 };
-},{}]},{},[6]);
+},{}]},{},[7]);
